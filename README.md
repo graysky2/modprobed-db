@@ -1,9 +1,10 @@
 WHAT IS IT
 
-Modprobed_db will store a list of all modules probed on a system and allow for easy recall.
-This is very useful for users wishing to build a minimal kernel via the make localmodconfig
-script which simply takes every module currently probed and switches everything BUT them off
-in the .config for a kernel resulting in smaller kernel packages and reduced compilation times.
+Modprobed_db will keep a running list of ALL modules ever probed on a system and allow for easy
+recall on demand. This is very useful for users wishing to build a minimal kernel via the make 
+localmodconfig script which simply takes every module currently probed and switches everything
+BUT them off in the .config for a kernel resulting in smaller kernel packages and reduced compilation
+times.
 
 INSTALLATION AND SETUP
 
