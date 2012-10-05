@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# modprobed_db by graysky
+#
+# See this wiki article for more details:
+# https://wiki.archlinux.org/index.php/Modprobed_db
+#
+# The purpose of this little script is to keep track of EVERY single module
+# that your system has probed over a time period for the purpose of having the
+# perfect amount of modules compiled into your kernel via the make localmodconfig
+# option.
+#
+# The script keeps two files:
+# 1) A human readable file: /var/log/modprobe.db
+# 2) A very convenient space separated file you can simple cat into a modprobe line
+# prior to a kernel build: /var/log/modprobe.long
+#
+
+if [[ -f /etc/modprobed_db.conf ]]; then
+	. /etc/modprobed_db.conf
+else
+	echo "Missing /etc/modprobed_db.conf."
+	exit 0
+fi
+
+[[ -z $DBPATH ]] && DBPATH="/var/log" # default in conf is not to define one so do it here
+
+db="$DBPATH/modprobed.db"
+dblong="$DBPATH/modprobed.long"
+
+list() {
+	if [[ -f "$db" ]]; then
+		cat "$db"
+		dbsize=$(wc -l <"$db")
+		echo 
+		echo "$db contains this many records: $dbsize"
+	else
+		echo "No database found."
+		echo "Create one via: sudo modprobed_db store"
+		exit 0
+	fi
+}
+
+recall() {
+	if [[ -f "$dblong" ]]; then
+		modprobe -a $(cat "$dblong")
+		echo "Done!"
+	else
+		echo "No database found."
+		echo "Create one via: sudo modprobed_db store"
+		exit 0
+	fi
+}
+
+store() {
+	if [[ ! -f "$db" ]]; then
+		echo "No db present so making $db"
+		cat /proc/modules  | awk '{print $1}' | sort -k 1,1 | grep -Ev "`echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > "$db"
+		sed ':a;N;$!ba;s/\n/ /g' "$db" > "$dblong"
+	fi
+
+	dbsize=$(wc -l <"$db")
+	echo "The db currently contains this many records: $dbsize"
+	dbcheck=$(md5sum "$db" | cut -c1-32)
+
+	cat /proc/modules  | awk '{print $1}' | sort -k 1,1 | grep -Ev "`echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > /tmp/.inmem
+	sort -k 1,1 "$db" /tmp/.inmem | uniq > /tmp/.potential_new_db
+	newcheck=$(md5sum /tmp/.potential_new_db | cut -c1-32)
+
+	if [ "$dbcheck" != "$newcheck" ]; then
+		echo "New module(s) detected:"
+		WHATSNEW=$(grep -Fxvf "$db" /tmp/.potential_new_db)
+		echo -e "\e[1;31m$WHATSNEW"
+		tput sgr0
+		echo
+		echo "Updating db..."
+		cp /tmp/.potential_new_db "$db"
+		newdbsize=$(wc -l <"$db")
+		echo "The db now contains this many records: $newdbsize"
+		sed ':a;N;$!ba;s/\n/ /g' "$db" > "$dblong"
+	fi
+}
+
+cleanup() {
+	[[ -f /tmp/.inmem ]] && rm -f /tmp/.inmem
+	[[ -f /tmp/.potential_new_db ]] && rm -f /tmp/.potential_new_db
+}
+
+case $1 in
+	list)
+		echo "Attempting to list contents of database..."
+		list
+		exit 0
+		;;
+	recall)
+		echo "Attempting to recall database..."
+		recall
+		exit 0
+		;;
+	store)
+		store
+		cleanup
+		;;
+	*)
+		echo "Usage: $0 {list|recall|store}"
+		echo "See manpage for additional details"
+		exit 0
+esac
