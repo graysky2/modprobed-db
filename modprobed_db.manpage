@@ -34,7 +34,7 @@ Call modprobe for every module contained in the datebase file.
 .IP 1. 4
 Optionally edit /etc/modprobed_db.conf to define the path to the database (default is /var/log).
 .IP 2. 4
-Edit /etc/modprobed_db.conf to define modules to ignore in the ignore array. For example, modules that are not a provided by the Linux kernel package and are provided by an external package. The examples provided are a few suggestions specific to Arch Linux.
+Edit /etc/modprobed_db.conf to define modules to ignore in the IGNORE array. For example, modules that are not a provided by the Linux kernel package and are provided by an external package. The examples provided are a few suggestions specific to Arch Linux.
 .IP 3. 4
 Add an entry to the root crontab to have the script run at some regular interval via crontab \fB-e\fP as the root user.
 .PP

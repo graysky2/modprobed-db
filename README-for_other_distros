@@ -20,7 +20,7 @@ QUICK SETUP
 
 1. Optionally edit /etc/modprobed_db.conf to define the path to the database (default is /var/log).
 	
-2. Edit /etc/modprobed_db.conf to define modules to ignore in the ignore array. For example, modules that are not a provided by the Linux kernel package and are provided by an external package. The examples provided are a few suggestions specific to Arch Linux.
+2. Edit /etc/modprobed_db.conf to define modules to ignore in the IGNORE array. For example, modules that are not a provided by the Linux kernel package and are provided by an external package. The examples provided are a few suggestions specific to Arch Linux.
 
 3. Add an entry to the root crontab to have the script run at some regular interval via crontab -e as the root user.
 
