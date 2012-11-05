@@ -28,3 +28,5 @@ DATA RECALL
 
 After the module database has been adequately populated, simply invoke /usr/bin/modprobed_db recall
 prior to compiling a kernel to load all modules followed by the make localmodconfig to do the magic.
+
+AUR Package: https://aur.archlinux.org/packages/modprobed_db
