@@ -15,7 +15,7 @@
 # 2) A very convenient space separated file you can simple cat into a modprobe line
 # prior to a kernel build: /var/log/modprobe.long
 #
-VERS="2.11"
+VERS="2.12"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 echo -e "${RED}Modprobed_db v$VERS${NRM}"
@@ -97,11 +97,11 @@ case $1 in
 	l|L|List|list)
 		echo -e ${BLD}"Attempting to list contents of database..."${NRM}
 		list
-		exit 1
+		exit 0
 		;;
 	r|R|Recall|recall)
 		recall
-		exit 1
+		exit 0
 		;;
 	s|S|Store|store)
 		store
@@ -110,5 +110,5 @@ case $1 in
 	*)
 		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store}"${NRM}
 		echo -e ${BLD}"See manpage for additional details"${NRM}
-		exit 1
+		exit 0
 esac
