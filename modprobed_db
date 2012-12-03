@@ -15,12 +15,17 @@
 # 2) A very convenient space separated file you can simple cat into a modprobe line
 # prior to a kernel build: /var/log/modprobe.long
 #
+VERS="2.11"
+export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
+
+echo -e "${RED}Modprobed_db v$VERS${NRM}"
+echo
 
 if [[ -f /etc/modprobed_db.conf ]]; then
 	. /etc/modprobed_db.conf
 else
-	echo "Missing /etc/modprobed_db.conf."
-	exit 0
+	echo -e "${RED}Error${NRM}${BLD}: ${YLW}/etc/modprobed_db.conf${NRM}${BLD} is missing.  Reinstall this package and try again."${NRM}
+	exit 1
 fi
 
 [[ -z $DBPATH ]] && DBPATH="/var/log" # default in conf is not to define one so do it here
@@ -33,50 +38,52 @@ list() {
 		cat "$db"
 		dbsize=$(wc -l <"$db")
 		echo 
-		echo "$db contains this many records: $dbsize"
+		echo -e ${YLW}"$db ${NRM}${BLD}contains this many records: $dbsize"${NRM}
 	else
-		echo "No database found."
-		echo "Create one via: sudo modprobed_db store"
-		exit 0
+		echo -e ${BLD}"No database found."${NRM}
+		echo -e ${BLD}"Create one via: ${RED}/usr/bin/modprobed_db store${NRM}${BLD} and try again."${NRM}
+		exit 1
 	fi
 }
 
 recall() {
+	if [[ $EUID -ne 0 ]]; then
+		echo -e ${BLD}"This function must be called as root!"${NRM} 1>&2
+		exit 1
+	fi
+
 	if [[ -f "$dblong" ]]; then
 		modprobe -a $(cat "$dblong")
-		echo "Done!"
+		echo
+		echo -e ${BLD}"Done!"${NRM}
 	else
-		echo "No database found."
-		echo "Create one via: sudo modprobed_db store"
-		exit 0
+		echo -e ${BLD}"No database found."${NRM}
+		echo -e ${BLD}"Create one via: ${RED}/usr/bin/modprobed_db store${NRM}${BLD} and try again."${NRM}
+		exit 1
 	fi
 }
 
 store() {
 	if [[ ! -f "$db" ]]; then
-		echo "No db present so making $db"
-		cat /proc/modules  | awk '{print $1}' | sort -k 1,1 | grep -Ev "`echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > "$db"
+		echo -e ${BLD}"No db present so making ${YLW}$db"${NRM}
+		cat /proc/modules  | gawk '{print $1}' | sort -k 1,1 | grep -Ev "`echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > "$db"
 		sed ':a;N;$!ba;s/\n/ /g' "$db" > "$dblong"
 	fi
 
 	dbsize=$(wc -l <"$db")
-	echo "The db currently contains this many records: $dbsize"
+	echo -e ${BLD}"The db currently contains this many records: $dbsize"${NRM}
 	dbcheck=$(md5sum "$db" | cut -c1-32)
 
-	cat /proc/modules  | awk '{print $1}' | sort -k 1,1 | grep -Ev "`echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > /tmp/.inmem
+	cat /proc/modules  | gawk '{print $1}' | sort -k 1,1 | grep -Ev "`echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > /tmp/.inmem
 	sort -k 1,1 "$db" /tmp/.inmem | uniq > /tmp/.potential_new_db
 	newcheck=$(md5sum /tmp/.potential_new_db | cut -c1-32)
 
 	if [ "$dbcheck" != "$newcheck" ]; then
-		echo "New module(s) detected:"
 		WHATSNEW=$(grep -Fxvf "$db" /tmp/.potential_new_db)
-		echo -e "\e[1;31m$WHATSNEW"
-		tput sgr0
-		echo
-		echo "Updating db..."
+		echo -e ${YLW}"New module(s) detected: ${NRM}${BLD}$WHATSNEW"${NRM}
 		cp /tmp/.potential_new_db "$db"
 		newdbsize=$(wc -l <"$db")
-		echo "The db now contains this many records: $newdbsize"
+		echo -e ${BLD}"The db now contains this many records: $newdbsize"${NRM}
 		sed ':a;N;$!ba;s/\n/ /g' "$db" > "$dblong"
 	fi
 }
@@ -87,22 +94,21 @@ cleanup() {
 }
 
 case $1 in
-	list)
-		echo "Attempting to list contents of database..."
+	l|L|List|list)
+		echo -e ${BLD}"Attempting to list contents of database..."${NRM}
 		list
-		exit 0
+		exit 1
 		;;
-	recall)
-		echo "Attempting to recall database..."
+	r|R|Recall|recall)
 		recall
-		exit 0
+		exit 1
 		;;
-	store)
+	s|S|Store|store)
 		store
 		cleanup
 		;;
 	*)
-		echo "Usage: $0 {list|recall|store}"
-		echo "See manpage for additional details"
-		exit 0
+		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store}"${NRM}
+		echo -e ${BLD}"See manpage for additional details"${NRM}
+		exit 1
 esac

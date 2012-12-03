@@ -1,13 +1,13 @@
 NAME
-	modprobed_db - Store and recall every module probed on the system at will.
+	Modprobed_db - Store and recall every module probed on the system at will.
 
 SYNOPSIS
-	modprobed_db [options]
+modprobed_db [options]
 
 DESCRIPTION
-	Modprobed_db is a useful utility for users wishing to build a minimal kernel via a "make localmodconfig" written by Steven Rostedt. In a nutshell, Rostedt's localmodconfig takes every module currently probed and adjusts the kernel's .config file to enable the corresponding selections for each one thus hardcoding them into the target kernel. This results in a system-specific, smaller kernel package and footprint as well as reduced compilation times.
+Modprobed_db is a useful utility for users wishing to build a minimal kernel via a "make localmodconfig" written by Steven Rostedt. In a nutshell, Rostedt's localmodconfig takes every module currently probed and adjusts the kernel's .config file to enable the corresponding selections for each one thus hardcoding them into the target kernel. This results in a system-specific, smaller kernel package and footprint as well as reduced compilation times.
 	
-	Modprobed_db simply logs every module ever probed on the target system to a text-based database and can recall them, that is modprobes them all, to provide substrate for the "make localmodconfig" described above.
+Modprobed_db simply logs every module ever probed on the target system to a text-based database and can recall them, that is modprobes them all, to provide substrate for the "make localmodconfig" described above.
 
 OPTIONS
 	list		Display to stdout the contents of the database defined in /etc/modprobed_db.conf.  Output is in alphabetical order.
@@ -33,10 +33,10 @@ QUICK SETUP
 For more, see: https://wiki.archlinux.org/index.php/Modprobed_db
 
 SEE ALSO
-	modprobe(8)
+modprobe(8)
 	
 BUGS
-	No known bugs.
+No known bugs.
 
 AUTHOR
-	graysky (graysky AT archlinux DOT us)
+graysky (graysky AT archlinux DOT us)
