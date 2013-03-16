@@ -15,7 +15,7 @@
 # 2) A very convenient space separated file you can simple cat into a modprobe line
 # prior to a kernel build: /var/log/modprobe.long
 #
-VERS="2.12"
+VERS="@VERSION@"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 echo -e "${RED}Modprobed_db v$VERS${NRM}"

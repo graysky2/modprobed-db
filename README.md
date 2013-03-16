@@ -3,8 +3,11 @@ Modprobed_db will keep a running list of ALL modules ever probed on a system and
 
 SETUP
 
-Copy modprobed_db to /usr/bin
-Copy modprobed_db.conf to /etc
+    $ make
+Running a `make install` as root will distribute the files to the filesystem.
+
+    # make install
+
 Edit /etc/modprobed_db.conf and select a path where the database will reside (default is /var/log)
 and optionally add some modules you wish to ignore to the ignore array. Some common ones are
 included in the PKG by default.

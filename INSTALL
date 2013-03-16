@@ -1,0 +1,15 @@
+BUILDING
+ There is no configure script nor is there anything to compile.
+
+ Setup the via a make.
+
+  $ make
+
+ Running a `make install` as root will distribute the files to
+ the filesystem.
+
+  # make install
+
+If you wish to contribute to other distros, fork this project
+on github and submit a pull request:
+https://github.com/graysky2/modprobed_db
