@@ -20,7 +20,7 @@ if [[ -f /etc/modprobed_db.conf ]]; then
 	. /etc/modprobed_db.conf
 else
 	echo -e "${RED}Error${NRM}${BLD}: ${YLW}/etc/modprobed_db.conf${NRM}${BLD} is missing.  Reinstall this package and try again."${NRM}
-	exit 0
+	exit 1
 fi
 
 # default in conf is not to define one so do it here
@@ -37,7 +37,7 @@ list() {
 	else
 		echo -e ${BLD}"No database found."${NRM}
 		echo -e ${BLD}"Create one via: ${RED}/usr/bin/modprobed_db store${NRM}${BLD} and try again."${NRM}
-		exit 0
+		exit 1
 	fi
 }
 
@@ -47,7 +47,7 @@ recall() {
 
 	if [[ $EUID -ne 0 ]]; then
 		echo -e ${BLD}"This function must be called as root!"${NRM} 1>&2
-		exit 1
+		exit 0
 	fi
 
 	if [[ -f "$db" ]]; then
@@ -98,11 +98,11 @@ cleanup() {
 case $1 in
 	l|L|List|list)
 		list
-		exit 1
+		exit 0
 		;;
 	r|R|Recall|recall)
 		recall
-		exit 1
+		exit 0
 		;;
 	s|S|Store|store)
 		store
@@ -111,5 +111,5 @@ case $1 in
 	*)
 		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store}"${NRM}
 		echo -e ${BLD}"See manpage for additional details"${NRM}
-		exit 1
+		exit 0
 esac
