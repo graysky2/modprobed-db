@@ -11,80 +11,122 @@
 # option.
 #
 VERS="@VERSION@"
-export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
-
-echo -e "${RED}Modprobed_db v$VERS${NRM}"
-echo
 
 if [[ -f /etc/modprobed_db.conf ]]; then
 	. /etc/modprobed_db.conf
+
+	# default colors if undefined are for dark backgrounds
+	[[ -z "$COLORS" ]] && COLORS="dark"
+[[ "$COLORS" = "dark" ]] && export BLD="\e[01m" \
+	RED="\e[01;31m" \
+	GRN="\e[01;32m" \
+	YLW="\e[01;33m" \
+	NRM="\e[00m"
+[[ "$COLORS" = "light" ]] && export BLD="\e[01m" \
+	RED="\e[00;31m" \
+	GRN="\e[00;32m" \
+	YLW="\e[00;34m" \
+	NRM="\e[00m"
+
+	# default in conf is not to define one so do it here
+	[[ -z "$DBPATH" ]] && DBPATH="/var/log"
+	DB="$DBPATH/modprobed.db"
 else
-	echo -e "${RED}Error${NRM}${BLD}: ${YLW}/etc/modprobed_db.conf${NRM}${BLD} is missing.  Reinstall this package and try again."${NRM}
+	echo "Error: /etc/modprobed_db.conf is missing.  Reinstall this package and try again."
 	exit 1
 fi
 
-# default in conf is not to define one so do it here
-[[ -z $DBPATH ]] && DBPATH="/var/log"
+check() {
+	# print out currently loaded modules less those in the IGNORE array
+	cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
+		grep -Ev "$(echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" \
+		>/tmp/.inmem
 
-db="$DBPATH/modprobed.db"
-
-list() {
-	if [[ -f "$db" ]]; then
-		cat "$db"
-		dbsize=$(wc -l <"$db")
-		echo
-		echo -e ${YLW}"$db ${NRM}${BLD}contains this many records: $dbsize"${NRM}
+	if [[ ! -f "$DB" ]]; then
+		# check to see if user can write to $DBPATH
+		if [[ -w "$DBPATH" ]]; then
+			echo -e ${BLD}"No db present so just created ${YLW}$DB"${NRM}
+			cp /tmp/.inmem "$DB"
+			exit 0
+		else 
+			echo -e ${RED}WARNING:${NRM}
+			echo -e ${BLD}" Cannot create ${YLW}$DB${NRM}${BLD} since $(whoami) does not have write access to ${YLW}$DBPATH"${NRM}
+			echo
+			echo -e ${BLD} Your options:${NRM}
+			echo -e ${BLD}"  1) Run $0 as root then change owners of the database like this:"${NRM}
+			echo -e ${BLD}"     # chown $(whoami):$(id -g -n $(whoami)) $DB"${NRM}
+			echo
+			echo -e ${BLD}"  or"${NRM}
+			echo 
+			echo -e ${BLD}"  2) Redefine the DBPATH in ${YLW}/etc/modprobed_db.conf${NRM}${BLD} to somewhere $(whoami) can write."${NRM}
+			exit 1
+		fi
 	else
-		echo -e ${BLD}"No database found."${NRM}
-		echo -e ${BLD}"Create one via: ${RED}/usr/bin/modprobed_db store${NRM}${BLD} and try again."${NRM}
-		exit 1
+		DBSIZE=$(wc -l <"$DB")
+		LOADSIZE=$(wc -l </tmp/.inmem)
 	fi
 }
 
 recall() {
-	# since version 2.17 the redundant file is deprecated
+	# since version 2.17 the redundant file is deprecated so remove it
 	[[ -f "$DBPATH/modprobed.long" ]] && rm -f $DBPATH/modprobed.long
 
 	if [[ $EUID -ne 0 ]]; then
-		echo -e ${BLD}"This function must be called as root!"${NRM} 1>&2
-		exit 0
+		echo -e ${BLD}"This function must be called as root!"${NRM}
+		exit 1
 	fi
 
-	if [[ -f "$db" ]]; then
-		# sed statement converts the db to a single, run-on sentence for modprobe
-		modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$db")
-		echo -e ${BLD}"Done!  Modprobed all modules in ${YLW}$db"${NRM}
-	else
-		echo -e ${BLD}"No database found."${NRM}
-		echo -e ${BLD}"Create one via: ${RED}/usr/bin/modprobed_db store${NRM}${BLD} and try again."${NRM}
-		exit 0
-	fi
+	# sed statement converts the db to a single, run-on sentence for modprobe
+	echo -e ${BLD}"Attempting to modprobe the contents of ${YLW}$DB"${NRM}${BLD}
+	modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$DB")
+	# print out currently loaded modules less those in the IGNORE array
+	cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
+		grep -Ev "$(echo ${IGNORE[*]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" \
+		>/tmp/.inmem
+
+	echo
+	echo -e ${RED}"$(wc -l </tmp/.inmem)${NRM}${BLD} modules are now loaded per ${YLW}/proc/modules"${NRM}
+}
+
+debug() {
+	echo -e ${BLD}"The following are in the database but not loaded:"${NRM}
+	grep -Fxvf /tmp/.inmem "$DB"
+	echo
+	echo -e ${BLD}"The following are loaded but not in the database:"${NRM}
+	grep -Fxvf "$DB" /tmp/.inmem
 }
 
 store() {
-	if [[ ! -f "$db" ]]; then
-		echo -e ${BLD}"No db present so making ${YLW}$db"${NRM}
-		cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
-			grep -Ev "`echo ${IGNORE[*]} | \
-			sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > "$db"
+	if [[ ! -w "$DB" ]]; then
+		echo -e ${RED}WARNING:${NRM}
+		echo -e ${BLD}" Cannot modify ${YLW}$DB${NRM}${BLD} since $(whoami) does not have write access!"${NRM}
+		echo
+		echo -e ${BLD} Your options:${NRM}
+		echo -e ${BLD}"  1) Change owners of the database like this:"${NRM}
+		echo -e ${BLD}"     # chown $(whoami):$(id -g -n $(whoami)) $DB"${NRM}
+		echo
+		echo -e ${BLD}"  or"${NRM}
+		echo 
+		echo -e ${BLD}"  2) Move ${YLW}$DB{${NRM}${BLD} to somewhere where $(whoami) can write"${NRM}
+		echo -e ${BLD}"     and redefine the DBPATH in ${YLW}/etc/modprobed_db.conf${NRM}${BLD} reflect this new location."${NRM}
+		exit 1
 	fi
 
-	dbsize=$(wc -l <"$db")
-	echo -e ${YLW}"$db ${NRM}${BLD}contains this many records: $dbsize"${NRM}
-	dbcheck=$(md5sum "$db" | cut -c1-32)
+	DBCHECK=$(md5sum "$DB" | cut -c1-32)
 
 	cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
 		grep -Ev "`echo ${IGNORE[*]} | \
 		sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > /tmp/.inmem
-	sort -k 1,1 "$db" /tmp/.inmem | uniq > /tmp/.potential_new_db
-	newcheck=$(md5sum /tmp/.potential_new_db | cut -c1-32)
+	sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
+	NEWCHECK=$(md5sum /tmp/.potential_new_db | cut -c1-32)
 
-	if [[ "$dbcheck" != "$newcheck" ]]; then
-		WHATSNEW=$(grep -Fxvf "$db" /tmp/.potential_new_db)
-		echo -e ${YLW}"New module(s) detected: ${NRM}${BLD}$WHATSNEW"${NRM}
-		cp /tmp/.potential_new_db "$db"
-		newdbsize=$(wc -l <"$db")
-		echo -e ${YLW}"$db ${NRM}${BLD}contains this many records: $dbsize"${NRM}
+	if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
+		WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
+		echo -e ${YLW}"New module(s) detected:\n${NRM}${BLD}$WHATSNEW"${NRM}
+		cp /tmp/.potential_new_db "$DB"
+		NEWDBSIZE=$(wc -l <"$DB")
+		echo
+		echo -e "$NEWDBSIZE modules are now saved in ${YLW}$DB ${NRM}${BLD}"
 	else
 		echo -e ${BLD}"No new modules detected.  Taking no action."${NRM}
 	fi
@@ -95,21 +137,28 @@ cleanup() {
 	[[ -f /tmp/.potential_new_db ]] && rm -f /tmp/.potential_new_db
 }
 
+echo -e "${RED}Modprobed_db v$VERS${NRM}"
+echo
+check
+echo -e ${BLD}"$LOADSIZE modules currently loaded per ${YLW}/proc/modules"${NRM}
+echo -e ${BLD}"$DBSIZE modules are in ${YLW}$DB"${NRM}
+echo
+
 case $1 in
 	l|L|List|list)
-		list
-		exit 0
+		less "$DB"; cleanup; exit 0
 		;;
 	r|R|Recall|recall)
-		recall
-		exit 0
+		recall; cleanup; exit 0
+		;;
+	d|D|Debug|debug)
+		debug; cleanup; exit 0
 		;;
 	s|S|Store|store)
-		store
-		cleanup
+		store; cleanup; exit 0
 		;;
 	*)
-		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store}"${NRM}
+		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store|debug}"${NRM}
 		echo -e ${BLD}"See manpage for additional details"${NRM}
 		exit 0
 esac
