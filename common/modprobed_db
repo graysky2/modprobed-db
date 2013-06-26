@@ -10,11 +10,6 @@
 # perfect amount of modules compiled into your kernel via the make localmodconfig
 # option.
 #
-# The script keeps two files:
-# 1) A human readable file: /var/log/modprobe.db
-# 2) A very convenient space separated file you can simple cat into a modprobe line
-# prior to a kernel build: /var/log/modprobe.long
-#
 VERS="@VERSION@"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
@@ -32,7 +27,6 @@ fi
 [[ -z $DBPATH ]] && DBPATH="/var/log"
 
 db="$DBPATH/modprobed.db"
-dblong="$DBPATH/modprobed.long"
 
 list() {
 	if [[ -f "$db" ]]; then
@@ -48,13 +42,17 @@ list() {
 }
 
 recall() {
+	# since version 2.17 the redundant file is deprecated
+	[[ -f "$DBPATH/modprobed.long" ]] && rm -f $DBPATH/modprobed.long
+
 	if [[ $EUID -ne 0 ]]; then
 		echo -e ${BLD}"This function must be called as root!"${NRM} 1>&2
 		exit 1
 	fi
 
-	if [[ -f "$dblong" ]]; then
-		modprobe -a $(cat "$dblong")
+	if [[ -f "$db" ]]; then
+		# sed statement converts the db to a single, run-on sentence for modprobe
+		modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$db")
 		echo -e ${BLD}"Done!  Modprobed all modules in ${YLW}$db"${NRM}
 	else
 		echo -e ${BLD}"No database found."${NRM}
@@ -69,7 +67,6 @@ store() {
 		cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
 			grep -Ev "`echo ${IGNORE[*]} | \
 			sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > "$db"
-		sed ':a;N;$!ba;s/\n/ /g' "$db" > "$dblong"
 	fi
 
 	dbsize=$(wc -l <"$db")
@@ -88,7 +85,6 @@ store() {
 		cp /tmp/.potential_new_db "$db"
 		newdbsize=$(wc -l <"$db")
 		echo -e ${YLW}"$db ${NRM}${BLD}contains this many records: $dbsize"${NRM}
-		sed ':a;N;$!ba;s/\n/ /g' "$db" > "$dblong"
 	else
 		echo -e ${BLD}"No new modules detected.  Taking no action."${NRM}
 	fi
