@@ -1,4 +1,4 @@
-VERSION = 2.15
+VERSION = 2.16
 PN = modprobed_db
 
 PREFIX ?= /usr
