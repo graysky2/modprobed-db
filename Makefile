@@ -1,12 +1,11 @@
-VERSION = 2.18
+VERSION = 2.19
 PN = modprobed_db
 
 PREFIX ?= /usr
-CONFDIR = /etc
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PN)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man8
-
+SKELDIR = $(PREFIX)/share/$(PN)
 RM = rm
 Q = @
 
@@ -15,9 +14,9 @@ all:
 	$(Q)sed -i -e 's/@VERSION@/'$(VERSION)'/' common/$(PN)
 
 install-bin:
-	$(Q)echo -e '\033[1;32mInstalling main script and config...\033[0m'
-	install -Dm644 common/$(PN).conf "$(DESTDIR)$(CONFDIR)/$(PN).conf"
+	$(Q)echo -e '\033[1;32mInstalling main script and skel config...\033[0m'
 	install -Dm755 common/$(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
+	install -Dm644 common/$(PN).skel "$(DESTDIR)$(SKELDIR)/$(PN).skel"
 
 install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
@@ -29,7 +28,4 @@ install: install-bin install-man
 uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
 	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN).8.gz"
-	$(Q)echo -e '\033[1;33mIf you want to remove your config as well, run: "make uninstall-conf"\033[0m'
-
-uninstall-conf:
-	$(RM) "$(DESTDIR)$(CONFDIR)/modprobed_db.conf"
+	$(Q)$(RM) -rf "$(DESTDIR)$(SKELDIR)"

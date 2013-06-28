@@ -12,11 +12,41 @@
 #
 VERS="@VERSION@"
 
-if [[ -f /etc/modprobed_db.conf ]]; then
-	. /etc/modprobed_db.conf
+if [[ ! -f /usr/share/modprobed_db/modprobed_db.skel ]]; then
+	echo '/usr/share/modprobed_db/modprobed_db.skel is missing, please reinstall this package.'
+	exit 1
+fi
 
-	# default colors if undefined are for dark backgrounds
-	[[ -z "$COLORS" ]] && COLORS="dark"
+[[ -z "$XDG_CONFIG_HOME" ]] && \
+	XDG_CONFIG_HOME="$HOME/.config"
+
+CFG_FILE=$XDG_CONFIG_HOME/modprobed_db.conf
+
+if [[ ! -f "$CFG_FILE" ]]; then
+	echo '------------------------------------------------------------'
+	echo ' No config file found so creating a fresh one in:'
+	echo " $HOME/.config/modprobed_db.conf"
+	echo
+	echo ' Consult the man page for setup instructions.'
+	if [[ -f /etc/modprobed_db.conf ]]; then
+		echo
+		echo ' Notice:'
+		echo ' /etc/modprobed_db.conf was found on your system.'
+		echo ' This file depreciated starting in version 2.19.'
+		echo ' Please diff this file against the freshly created one.'
+		echo
+		echo ' Do NOT just blindly overwrite!'
+	fi
+	cp /usr/share/modprobed_db/modprobed_db.skel $XDG_CONFIG_HOME/modprobed_db.conf
+	echo '------------------------------------------------------------'
+	exit 0
+else
+	. $XDG_CONFIG_HOME/modprobed_db.conf
+	DB="$DBPATH/modprobed.db"
+fi
+
+# default colors if undefined are for dark backgrounds
+[[ -z "$COLORS" ]] && COLORS="dark"
 [[ "$COLORS" = "dark" ]] && export BLD="\e[01m" \
 	RED="\e[01;31m" \
 	GRN="\e[01;32m" \
@@ -28,14 +58,6 @@ if [[ -f /etc/modprobed_db.conf ]]; then
 	YLW="\e[00;34m" \
 	NRM="\e[00m"
 
-	# default in conf is not to define one so do it here
-	[[ -z "$DBPATH" ]] && DBPATH="/var/log"
-	DB="$DBPATH/modprobed.db"
-else
-	echo "Error: /etc/modprobed_db.conf is missing.  Reinstall this package and try again."
-	exit 1
-fi
-
 check() {
 	# print out currently loaded modules less those in the IGNORE array
 	cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
@@ -45,7 +67,16 @@ check() {
 	if [[ ! -f "$DB" ]]; then
 		# check to see if user can write to $DBPATH
 		if [[ -w "$DBPATH" ]]; then
-			echo -e ${BLD}"No db present so just created ${YLW}$DB"${NRM}
+			echo -e ${BLD}"No db present so just created one: ${YLW}$DB"${NRM}
+			if [[ -f /var/log/modprobed.db ]]; then
+				echo
+				echo -e ${BLD}${RED}"NOTICE:"${NRM}
+				echo -e ${BLD}${YLW}"/var/log/modprobed.db${NRM}${BLD} found on this system."${NRM}
+				echo -e ${BLD}"It is recommended that you copy it to ${YLW}$HOME/.config/modprobed.db"${NRM}
+				echo -e ${BLD}"since this is the new default location for the database."${NRM}
+				echo
+				echo -e ${BLD}"Once copied, please delete the old ${YLW}/var/log/modprobed.db"${NRM}
+			fi
 			cp /tmp/.inmem "$DB"
 			exit 0
 		else 
@@ -57,7 +88,7 @@ check() {
 			echo -e ${BLD}"     # chown $(whoami):$(id -g -n $(whoami)) $DB"${NRM}
 			echo
 			echo -e ${BLD}"  or"${NRM}
-			echo 
+			echo
 			echo -e ${BLD}"  2) Redefine the DBPATH in ${YLW}/etc/modprobed_db.conf${NRM}${BLD} to somewhere $(whoami) can write."${NRM}
 			exit 1
 		fi

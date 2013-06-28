@@ -8,18 +8,17 @@ Running a `make install` as root will distribute the files to the filesystem.
 
     # make install
 
-Edit /etc/modprobed_db.conf and select a path where the database will reside (default is /var/log)
-and optionally add some modules you wish to ignore to the ignore array. Some common ones are
-included in the PKG by default.
+Edit $HOME/.config/modprobed_db.conf and select a path where the database will reside (default is $HOME/.config)
+and optionally add some modules you wish to ignore to the ignore array. Some common ones are included in the PKG by default.
 
 USAGE
 
-The most convenient method to "use" the script is to simply add an entry in the root user's crontab
-to invoke /usr/bin/modprobed_db store at some regular interval.
+The most convenient method to use the script is to simply add an entry your user's crontab to invoke
+/usr/bin/modprobed_db store at some regular interval.
 
 Example running the script once every 20 minutes:
 
-	# crontab -e
+	$ crontab -e
 	*/20 * * * *   /usr/bin/modprobed_db store &> /dev/null
 
 DATA RECALL
