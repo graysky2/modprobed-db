@@ -2,29 +2,23 @@
 
 # modprobed_db by graysky
 #
-# See this wiki article for more details:
-# https://wiki.archlinux.org/index.php/Modprobed_db
-#
 # The purpose of this little script is to keep track of EVERY single module
 # that your system has probed over a time period for the purpose of having the
 # perfect amount of modules compiled into your kernel via the make localmodconfig
 # option.
 #
-VERS="@VERSION@"
+VERS='@VERSION@'
 
-if [[ ! -f /usr/share/modprobed_db/modprobed_db.skel ]]; then
-	echo '/usr/share/modprobed_db/modprobed_db.skel is missing, please reinstall this package.'
+SKEL='/usr/share/modprobed_db/modprobed_db.skel'
+
+if [[ ! -f $SKEL ]]; then
+	echo "$SKEL is missing, please reinstall this package."
 	exit 1
 fi
 
 # We need to keep book on which user runs this script invoking it via sudo
-#
-# find user invoking the script
 USER=$(logname)
-
-# find user's homedir and use it
 HOMEDIR="$(getent passwd $USER | cut -d: -f6)"
-
 CFG_FILE=$HOMEDIR/.config/modprobed_db.conf
 
 if [[ ! -f "$CFG_FILE" ]]; then
@@ -42,7 +36,7 @@ if [[ ! -f "$CFG_FILE" ]]; then
 		echo
 		echo ' Do NOT just blindly overwrite!'
 	fi
-	sed  "s|@HOME@|$HOMEDIR|" /usr/share/modprobed_db/modprobed_db.skel >$CFG_FILE
+	sed  "s|@HOME@|$HOMEDIR|" $SKEL >$CFG_FILE
 	echo '------------------------------------------------------------'
 	exit 0
 else
@@ -77,7 +71,7 @@ check() {
 				echo
 				echo -e ${BLD}${RED}"NOTICE:"${NRM}
 				echo -e ${BLD}${YLW}"/var/log/modprobed.db${NRM}${BLD} found on this system."${NRM}
-				echo -e ${BLD}"It is recommended that you copy it to ${YLW}$HOME/.config/modprobed.db"${NRM}
+				echo -e ${BLD}"It is recommended that you copy it to ${YLW}$DB"${NRM}
 				echo -e ${BLD}"since this is the new default location for the database."${NRM}
 				echo
 				echo -e ${BLD}"Once copied, please delete the old ${YLW}/var/log/modprobed.db"${NRM}
@@ -90,11 +84,11 @@ check() {
 			echo
 			echo -e ${BLD} Your options:${NRM}
 			echo -e ${BLD}"  1) Run $0 as root then change owners of the database like this:"${NRM}
-			echo -e ${BLD}"     # chown $USER:$(id -g -n $(whoami)) $DB"${NRM}
+			echo -e ${BLD}"     # chown $USER:$(id -g -n $USER) $DB"${NRM}
 			echo
 			echo -e ${BLD}"  or"${NRM}
 			echo
-			echo -e ${BLD}"  2) Redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} to somewhere $(whoami) can write."${NRM}
+			echo -e ${BLD}"  2) Redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} to somewhere $USER can write."${NRM}
 			exit 1
 		fi
 	else
@@ -135,16 +129,16 @@ debug() {
 store() {
 	if [[ ! -w "$DB" ]]; then
 		echo -e ${RED}WARNING:${NRM}
-		echo -e ${BLD}" Cannot modify ${YLW}$DB${NRM}${BLD} since $(whoami) does not have write access!"${NRM}
+		echo -e ${BLD}" Cannot modify ${YLW}$DB${NRM}${BLD} since $USER does not have write access!"${NRM}
 		echo
 		echo -e ${BLD} Your options:${NRM}
 		echo -e ${BLD}"  1) Change owners of the database like this:"${NRM}
-		echo -e ${BLD}"     # chown $(whoami):$(id -g -n $(whoami)) $DB"${NRM}
+		echo -e ${BLD}"     # chown $USER:$(id -g -n $USER) $DB"${NRM}
 		echo
 		echo -e ${BLD}"  or"${NRM}
 		echo 
-		echo -e ${BLD}"  2) Move ${YLW}$DB{${NRM}${BLD} to somewhere where $(whoami) can write"${NRM}
-		echo -e ${BLD}"     and redefine the DBPATH in ${YLW}/etc/modprobed_db.conf${NRM}${BLD} reflect this new location."${NRM}
+		echo -e ${BLD}"  2) Move ${YLW}$DB{${NRM}${BLD} to somewhere where $USER can write"${NRM}
+		echo -e ${BLD}"     and redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location."${NRM}
 		exit 1
 	fi
 
