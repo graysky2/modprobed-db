@@ -1,10 +1,10 @@
-#
-# /etc/modprobed_db.conf
-#
 # For documentation, see the manpage for modprobed_db
 
 # Path where database will reside.
-DBPATH="$HOME/.config"
+# Do NOT user a variable in the following path like $HOME
+# You MUST use a the fully qualified path or else invoking the script via sudo
+# will trick it into thinking that the db is in /root/foo/bar
+DBPATH="@HOME@/.config"
 
 # Define the background of your terminal theme here.
 # A setting of dark will produce colors that nicely contrast a dark background.

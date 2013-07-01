@@ -17,15 +17,20 @@ if [[ ! -f /usr/share/modprobed_db/modprobed_db.skel ]]; then
 	exit 1
 fi
 
-[[ -z "$XDG_CONFIG_HOME" ]] && \
-	XDG_CONFIG_HOME="$HOME/.config"
+# We need to keep book on which user runs this script invoking it via sudo
+#
+# find user invoking the script
+USER=$(logname)
 
-CFG_FILE=$XDG_CONFIG_HOME/modprobed_db.conf
+# find user's homedir and use it
+HOMEDIR="$(getent passwd $USER | cut -d: -f6)"
+
+CFG_FILE=$HOMEDIR/.config/modprobed_db.conf
 
 if [[ ! -f "$CFG_FILE" ]]; then
 	echo '------------------------------------------------------------'
 	echo ' No config file found so creating a fresh one in:'
-	echo " $HOME/.config/modprobed_db.conf"
+	echo " $HOMEDIR/.config/modprobed_db.conf"
 	echo
 	echo ' Consult the man page for setup instructions.'
 	if [[ -f /etc/modprobed_db.conf ]]; then
@@ -37,11 +42,11 @@ if [[ ! -f "$CFG_FILE" ]]; then
 		echo
 		echo ' Do NOT just blindly overwrite!'
 	fi
-	cp /usr/share/modprobed_db/modprobed_db.skel $XDG_CONFIG_HOME/modprobed_db.conf
+	sed  "s|@HOME@|$HOMEDIR|" /usr/share/modprobed_db/modprobed_db.skel >$CFG_FILE
 	echo '------------------------------------------------------------'
 	exit 0
 else
-	. $XDG_CONFIG_HOME/modprobed_db.conf
+	. $CFG_FILE
 	DB="$DBPATH/modprobed.db"
 fi
 
@@ -81,15 +86,15 @@ check() {
 			exit 0
 		else 
 			echo -e ${RED}WARNING:${NRM}
-			echo -e ${BLD}" Cannot create ${YLW}$DB${NRM}${BLD} since $(whoami) does not have write access to ${YLW}$DBPATH"${NRM}
+			echo -e ${BLD}" Cannot create ${YLW}$DB${NRM}${BLD} since $USER does not have write access to ${YLW}$DBPATH"${NRM}
 			echo
 			echo -e ${BLD} Your options:${NRM}
 			echo -e ${BLD}"  1) Run $0 as root then change owners of the database like this:"${NRM}
-			echo -e ${BLD}"     # chown $(whoami):$(id -g -n $(whoami)) $DB"${NRM}
+			echo -e ${BLD}"     # chown $USER:$(id -g -n $(whoami)) $DB"${NRM}
 			echo
 			echo -e ${BLD}"  or"${NRM}
 			echo
-			echo -e ${BLD}"  2) Redefine the DBPATH in ${YLW}/etc/modprobed_db.conf${NRM}${BLD} to somewhere $(whoami) can write."${NRM}
+			echo -e ${BLD}"  2) Redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} to somewhere $(whoami) can write."${NRM}
 			exit 1
 		fi
 	else
