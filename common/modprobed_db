@@ -23,7 +23,7 @@ USER=$(logname)
 
 # find user's homedir and use it
 homedir="$(awk -F: '{print $6}' <(getent passwd $USER))"
-cfg_file=$XDG_CONFIG_HOME/modprobed_db.conf
+cfg_file="${XDG_CONFIG_HOME:-$homedir/.config}"/modprobed_db.conf
 
 # default COLORS if undefined are for dark backgrounds
 [[ -z "$COLORS" ]] && COLORS="dark"
@@ -32,17 +32,17 @@ cfg_file=$XDG_CONFIG_HOME/modprobed_db.conf
 	grn=$'\e[00;32m' \
 	ylw=$'\e[00;34m' \
 	nrm=$'\e[0m'
-[[ "$COLORS" = "light" ]] && export bld=$'\e[01m' \
-	red=$'\e[00;31m' \
-	grn=$'\e[00;32m' \
-	ylw=$'\e[00;34m' \
-	nrm=$'\e[00m'
+[[ "$COLORS" = "light" ]] && export bld="\e[01m" \
+	red="\e[00;31m" \
+	grn="\e[00;32m" \
+	ylw="\e[00;34m" \
+	nrm="\e[00m"
 
 if [[ ! -f "$cfg_file" ]]; then
 	cat <<-EOF
 	------------------------------------------------------------
 	No config file found so creating a fresh one in:
-	$XDG_CONFIG_HOME/modprobed_db.conf
+	"$XDG_CONFIG_HOME"/modprobed_db.conf
 	
 	Consult the man page for setup instructions.
 	EOF
