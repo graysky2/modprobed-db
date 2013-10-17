@@ -17,4 +17,6 @@ COLORS=dark
 # get built or that are provided by another package.
 #
 # For Arch Linux, some examples are given below.
-IGNORE=(nvidia vboxdrv vboxnetflt vboxnetadp vboxpci lirc_dev lirc_i2c osscore oss_hdaudio oss_usb tp_smapi thinkpad_ec zfs)
+IGNORE=(nvidia vboxdrv vboxnetflt vboxnetadp vboxpci lirc_dev lirc_i2c
+osscore oss_hdaudio oss_usb tp_smapi thinkpad_ec
+zavl znvpair zunicode zcommon zpios zfs spl splat)
