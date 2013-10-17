@@ -8,7 +8,6 @@
 # option.
 #
 VERS='@VERSION@'
-
 SKEL='/usr/share/modprobed_db/modprobed_db.skel'
 
 if [[ ! -f $SKEL ]]; then
