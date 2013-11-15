@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# modprobed_db by graysky
+# modprobed-db by graysky
 #
 # The purpose of this little script is to keep track of EVERY single module
 # that your system has probed over a time period for the purpose of having the
@@ -8,7 +8,7 @@
 # option.
 #
 VERS='@VERSION@'
-SKEL='/usr/share/modprobed_db/modprobed_db.skel'
+SKEL='/usr/share/modprobed-db/modprobed-db.skel'
 
 if [[ ! -f $SKEL ]]; then
 	echo "$SKEL is missing, please reinstall this package."
@@ -18,12 +18,16 @@ fi
 # We need to keep book on which user runs this script invoking it via sudo
 USER=$(logname)
 HOMEDIR="$(getent passwd $USER | cut -d: -f6)"
-CFG_FILE=$HOMEDIR/.config/modprobed_db.conf
+CFG_FILE=$HOMEDIR/.config/modprobed-db.conf
+
+# name change from modprobed_db --> modprobed-db so move existing configs
+[[ -f "$HOMEDIR/.config/modprobed_db.conf" ]] && \
+	mv "$HOMEDIR/.config/modprobed_db.conf" "$HOMEDIR/.config/modprobed-db.conf"
 
 if [[ ! -f "$CFG_FILE" ]]; then
 	echo '------------------------------------------------------------'
 	echo ' No config file found so creating a fresh one in:'
-	echo " $HOMEDIR/.config/modprobed_db.conf"
+	echo " $HOMEDIR/.config/modprobed-db.conf"
 	echo
 	echo ' Consult the man page for setup instructions.'
 	if [[ -f /etc/modprobed_db.conf ]]; then
@@ -34,6 +38,7 @@ if [[ ! -f "$CFG_FILE" ]]; then
 		echo ' Please diff this file against the freshly created one.'
 		echo
 		echo ' Do NOT just blindly overwrite!'
+		echo ' Note the differences in names (no underscore any more)!'
 	fi
 	sed  "s|@HOME@|$HOMEDIR|" $SKEL >$CFG_FILE
 	echo '------------------------------------------------------------'
@@ -166,7 +171,7 @@ cleanup() {
 	[[ -f /tmp/.potential_new_db ]] && rm -f /tmp/.potential_new_db
 }
 
-echo -e "${RED}Modprobed_db v$VERS${NRM}"
+echo -e "${RED}Modprobed-db v$VERS${NRM}"
 echo
 check
 echo -e ${BLD}"$LOADSIZE modules currently loaded per ${YLW}/proc/modules"${NRM}

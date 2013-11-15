@@ -1,5 +1,5 @@
-VERSION = 2.21
-PN = modprobed_db
+VERSION = 2.23
+PN = modprobed-db
 
 PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
@@ -11,12 +11,15 @@ Q = @
 
 all:
 	$(Q)echo -e '\033[1;32mSetting version\033[0m'
-	$(Q)sed -i -e 's/@VERSION@/'$(VERSION)'/' common/$(PN)
+	$(Q)sed 's/@VERSION@/'$(VERSION)'/' common/$(PN).in > common/$(PN)
 
 install-bin:
 	$(Q)echo -e '\033[1;32mInstalling main script and skel config...\033[0m'
 	install -Dm755 common/$(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
 	install -Dm644 common/$(PN).skel "$(DESTDIR)$(SKELDIR)/$(PN).skel"
+
+	# symlink for compatibility due to name change
+	ln -s $(PN) "$(DESTDIR)$(BINDIR)/modprobed_db"
 
 install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'

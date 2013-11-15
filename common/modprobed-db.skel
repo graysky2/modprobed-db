@@ -1,4 +1,4 @@
-# For documentation, see the manpage for modprobed_db
+# For documentation, see the manpage for modprobed-db
 
 # Path where database will reside.
 # Do NOT user a variable in the following path like $HOME
