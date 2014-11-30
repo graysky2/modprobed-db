@@ -165,12 +165,12 @@ store() {
 		echo
 		echo -e ${BLD} Your options:${NRM}
 		echo -e ${BLD}"  1) Change owners of the database like this:"${NRM}
-		echo -e ${BLD}"     # chown $USER:$(id -g -n $USER) $DB"${NRM}
+		echo -e ${BLD}"     chown $USER:$(id -g -n $USER) $DB"${NRM}
 		echo
 		echo -e ${BLD}"  or"${NRM}
 		echo 
-		echo -e ${BLD}"  2) Move ${YLW}$DB{${NRM}${BLD} to somewhere where $USER can write"${NRM}
-		echo -e ${BLD}"     and redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location."${NRM}
+		echo -e ${BLD}"  2) Move ${YLW}$DB${NRM}${BLD} to somewhere where $USER can write and redefine"${NRM}
+		echo -e ${BLD}"     the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location."${NRM}
 		exit 1
 	fi
 
