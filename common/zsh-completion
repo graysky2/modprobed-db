@@ -1,0 +1,14 @@
+#compdef modprobed-db
+
+_mdpdb() {
+  local -a options
+
+  options=('list:Display in alphabetical order the contents of the database'
+           'store:Snapshot currently loaded modules to the database'
+           'recall:Modprobe every module in the database'
+           'debug:Print the difference between /proc/modules and the database and vice versa')
+
+  _describe 'options' options
+}
+
+_mdpdb
