@@ -15,34 +15,22 @@ if [[ ! -f $SKEL ]]; then
 	exit 1
 fi
 
-# Under normal circumstances, logname is used to identify the user
-# who ran this script.  For some configurations, (rare) logname will fail to
-# return this piece of data so we use whoami to get the user name.
-
-logname &>/dev/null
-if [[ $? -eq 0 ]]; then
-  USER=$(logname)
-else
-  if [[ $EUID -eq 0 ]]; then
-    # running as root
-    USER="$SUDO_USER"
-  else
-    # not running as root
-    USER=$(whoami)
+if [[ -z "$SUDO_USER" ]]; then
+  logname &>/dev/null
+  if [[ $? -eq 0 ]]; then
+    USER=$(logname)
   fi
-fi
-
-if [[ -z "$USER" ]]; then
-	echo 'ERROR: Cannot figure out who ran this script.'
-	echo 'Bailing out.'
-	exit 1
+elif [[ "$SUDO_USER" = "root" ]]; then
+  mesg="Cannot determine your username so exiting."
+  echo -e "==> ERROR: ${mesg}" && exit 1
+else
+  USER="$SUDO_USER"
 fi
 
 HOMEDIR="$(getent passwd $USER | cut -d: -f6)"
 
 if [[ ! -d "$HOMEDIR" ]]; then
-	echo 'ERROR: Cannot locate user home directory'
-	echo 'Bailing out.'
+	echo '==> ERROR: Cannot locate user home directory.'
 	exit 1
 fi
 
