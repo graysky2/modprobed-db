@@ -1,0 +1,6 @@
+[Unit]
+Description=Timer for modprobed-db - 1Hour
+PartOf=modprobed-db@.service
+
+[Timer]
+OnUnitActiveSec=1h

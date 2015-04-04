@@ -52,12 +52,12 @@ Optionally add an entry your crontab to have the script run at some regular inte
 
 .fam T
 .fi
-Systemd users not wishing to use cron may use the included \fBmodprobed-db\fP@.timer which will run \fBmodprobed-db\fP in store mode once per hour, and at boot and on shutdown. Invoke it like so:
+Systemd users not wishing to use cron may use the included \fBmodprobed-db\fP@.service which will run \fBmodprobed-db\fP in store mode once per hour, and at boot and on shutdown. Invoke it like so:
 .PP
 .nf
 .fam C
- systemctl enable modprobed-db@USERNAME.timer
- systemctl start modprobed-db@USERNAME.timer
+ systemctl enable modprobed-db@USERNAME.service
+ systemctl start modprobed-db@USERNAME.service
 
 .fam T
 .fi
