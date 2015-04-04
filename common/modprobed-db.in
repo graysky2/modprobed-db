@@ -182,30 +182,57 @@ store() {
 	fi
 }
 
+storesilent() {
+	[[ -w "$DB" ]] || exit 1
+	DBCHECK=$(md5sum "$DB" | cut -c1-32)
+
+	cat /proc/modules | awk '{print $1}' | sort -k 1,1 | \
+		grep -Ev "`echo ${IGNORE[*]} | \
+		sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/'`" > /tmp/.inmem
+	sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
+	NEWCHECK=$(md5sum /tmp/.potential_new_db | cut -c1-32)
+
+	if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
+		WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
+		cp /tmp/.potential_new_db "$DB"
+		NEWDBSIZE=$(wc -l <"$DB")
+		echo "$NEWDBSIZE modules are now saved in $DB"
+	else
+		echo "No new modules detected"
+	fi
+}
+
 cleanup() {
 	[[ -f /tmp/.inmem ]] && rm -f /tmp/.inmem
 	[[ -f /tmp/.potential_new_db ]] && rm -f /tmp/.potential_new_db
 }
 
-echo -e "${RED}Modprobed-db v$VERS${NRM}"
-echo
-check
-echo -e ${BLD}"$LOADSIZE modules currently loaded per ${YLW}/proc/modules"${NRM}
-echo -e ${BLD}"$DBSIZE modules are in ${YLW}$DB"${NRM}
-echo
+announce() {
+	echo -e "${RED}Modprobed-db v$VERS${NRM}"
+	echo
+	check
+	echo -e ${BLD}"$LOADSIZE modules currently loaded per ${YLW}/proc/modules"${NRM}
+	echo -e ${BLD}"$DBSIZE modules are in ${YLW}$DB"${NRM}
+	echo
+}
 
 case $1 in
 	l|L|List|list)
-		less "$DB"; cleanup; exit 0
+		announce; cat "$DB"; cleanup; exit 0
 		;;
 	r|R|Recall|recall)
-		recall; cleanup; exit 0
+		announce; recall; cleanup; exit 0
 		;;
 	d|D|Debug|debug)
-		debug; cleanup; exit 0
+		announce; debug; cleanup; exit 0
 		;;
 	s|S|Store|store)
-		store; cleanup; exit 0
+		announce; store; cleanup; exit 0
+		;;
+	storesilent)
+		# this function is designed to be called by the systemd timer
+		# simply to reduce the write entries to the journal
+		check; storesilent; cleanup; exit 0
 		;;
 	*)
 		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store|debug}"${NRM}
