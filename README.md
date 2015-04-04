@@ -21,6 +21,14 @@ Example running the script once every 20 minutes:
 	$ crontab -e
 	*/20 * * * *   /usr/bin/modprobed-db store &> /dev/null
 
+Systemd users not wishing to use cron may use the included modprobed-db@.service which will run modprobed-db in store
+mode once per hour, and at boot and on shutdown. Invoke it like so:
+
+	# systemctl enable modprobed-db@USERNAME.service
+	# systemctl start modprobed-db@USERNAME.service
+
+Note that USERNAME should be replaced with the your user.
+
 DATA RECALL
 
 After the module database has been adequately populated, simply invoke /usr/bin/modprobed-db recall prior to compiling a kernel to load all modules followed by the make localmodconfig to do the magic.
