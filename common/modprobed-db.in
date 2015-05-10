@@ -98,7 +98,7 @@ check() {
 			fi
 			cp /tmp/.inmem "$DB"
 			exit 0
-		else 
+		else
 			echo -e ${RED}WARNING:${NRM}
 			echo -e ${BLD}" Cannot create ${YLW}$DB${NRM}${BLD} since $USER does not have write access to ${YLW}$DBPATH"${NRM}
 			echo
@@ -156,7 +156,7 @@ store() {
 		echo -e ${BLD}"     chown $USER:$(id -g -n $USER) $DB"${NRM}
 		echo
 		echo -e ${BLD}"  or"${NRM}
-		echo 
+		echo
 		echo -e ${BLD}"  2) Move ${YLW}$DB${NRM}${BLD} to somewhere where $USER can write and redefine"${NRM}
 		echo -e ${BLD}"     the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location."${NRM}
 		exit 1
@@ -176,9 +176,9 @@ store() {
 		cp /tmp/.potential_new_db "$DB"
 		NEWDBSIZE=$(wc -l <"$DB")
 		echo
-		echo -e "$NEWDBSIZE modules are now saved in ${YLW}$DB ${NRM}${BLD}"
+		echo -e ${BLD}"$NEWDBSIZE modules are now saved in ${YLW}$DB"${NRM}
 	else
-		echo -e ${BLD}"No new modules detected.  Taking no action."${NRM}
+		echo -e ${BLD}"No new modules detected. Taking no action."${NRM}
 	fi
 }
 
