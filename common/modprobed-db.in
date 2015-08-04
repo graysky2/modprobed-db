@@ -9,6 +9,7 @@
 #
 VERS='@VERSION@'
 SKEL='/usr/share/modprobed-db/modprobed-db.skel'
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 if [[ ! -f $SKEL ]]; then
 	echo "$SKEL is missing, please reinstall this package."
@@ -34,16 +35,17 @@ if [[ ! -d "$HOMEDIR" ]]; then
 	exit 1
 fi
 
-CFG_FILE=$HOMEDIR/.config/modprobed-db.conf
+[[ ! -d "$XDG_CONFIG_HOME" ]] && mkdir "$XDG_CONFIG_HOME"
+CFG_FILE="$XDG_CONFIG_HOME/modprobed-db.conf"
 
 # name change from modprobed_db --> modprobed-db so move existing configs
 [[ -f "$HOMEDIR/.config/modprobed_db.conf" ]] && \
-	mv "$HOMEDIR/.config/modprobed_db.conf" "$HOMEDIR/.config/modprobed-db.conf"
+	mv "$HOMEDIR/.config/modprobed_db.conf" "$CFG_FILE"
 
 if [[ ! -f "$CFG_FILE" ]]; then
 	echo '------------------------------------------------------------'
 	echo ' No config file found so creating a fresh one in:'
-	echo " $HOMEDIR/.config/modprobed-db.conf"
+	echo " $CFG_FILE"
 	echo
 	echo ' Consult the man page for setup instructions.'
 	if [[ -f /etc/modprobed_db.conf ]]; then
