@@ -88,7 +88,9 @@ check() {
 	if [[ ! -f "$DB" ]]; then
 		# check to see if user can write to $DBPATH
 		if [[ -w "$DBPATH" ]]; then
-			echo -e ${BLD}"No db present so just created one: ${YLW}$DB"${NRM}
+			echo -e ${BLD}"New database created: ${YLW}$DB"${NRM}
+			echo
+			FIRST_TIME_RUN=1
 			if [[ -f /var/log/modprobed.db ]]; then
 				echo
 				echo -e ${BLD}${RED}"NOTICE:"${NRM}
@@ -99,7 +101,8 @@ check() {
 				echo -e ${BLD}"Once copied, please delete the old ${YLW}/var/log/modprobed.db"${NRM}
 			fi
 			cp /tmp/.inmem "$DB"
-			exit 0
+			DBSIZE=$(wc -l <"$DB")
+			LOADSIZE=$(wc -l </tmp/.inmem)
 		else
 			echo -e ${RED}WARNING:${NRM}
 			echo -e ${BLD}" Cannot create ${YLW}$DB${NRM}${BLD} since $USER does not have write access to ${YLW}$DBPATH"${NRM}
@@ -180,7 +183,8 @@ store() {
 		echo
 		echo -e ${BLD}"$NEWDBSIZE modules are now saved in ${YLW}$DB"${NRM}
 	else
-		echo -e ${BLD}"No new modules detected. Taking no action."${NRM}
+		[[ $FIRST_TIME_RUN -eq 1 ]] && exit 0 ||
+			echo -e ${BLD}"No new modules detected. Taking no action."${NRM}
 	fi
 }
 
