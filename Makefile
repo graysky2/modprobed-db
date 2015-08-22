@@ -14,7 +14,7 @@ INSTALL_PROGRAM = $(INSTALL) -m755
 INSTALL_DATA = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -d
 
-RM = rm -rf
+RM = rm --recursive --force
 Q = @
 
 all:
@@ -41,7 +41,7 @@ install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MANDIR)"
 	$(INSTALL_DATA) doc/$(PN).8 "$(DESTDIR)$(MANDIR)/$(PN).8"
-	gzip -9 "$(DESTDIR)$(MANDIR)/$(PN).8"
+	gzip --force -9 "$(DESTDIR)$(MANDIR)/$(PN).8"
 
 install: install-bin install-man
 
