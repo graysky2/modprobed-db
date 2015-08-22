@@ -5,6 +5,7 @@ PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PN)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man8
+MANF   = "doc/$(PN).8"
 INITDIR_SYSTEMD = /usr/lib/systemd/system
 SKELDIR = $(PREFIX)/share/$(PN)
 ZSHDIR = $(PREFIX)/share/zsh/site-functions
@@ -30,9 +31,12 @@ install-bin:
 
 	# symlink for compatibility due to name change
 	ln --force --symbolic $(PN) "$(DESTDIR)$(BINDIR)/modprobed_db"
-	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
-	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
-	
+
+	# dont install if the users SHELL is not zsh
+ifneq ($(wildcard $(DESTDIR)$(ZSHDIR)/.*),)
+	$(MAKE) install-zsh
+endif
+
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) init/modprobed-db@.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.service"
 	$(INSTALL_DATA) init/modprobed-db@.timer "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.timer"
@@ -40,8 +44,13 @@ install-bin:
 install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MANDIR)"
-	cat "doc/$(PN).8" | gzip --force -9 > "doc/$(PN).8.gz"
-	$(INSTALL_DATA) "doc/$(PN).8.gz" "$(DESTDIR)$(MANDIR)"
+	cat $(MANF) | gzip --force -9 > "$(MANF).gz"
+	$(INSTALL_DATA) "$(MANF).gz" "$(DESTDIR)$(MANDIR)"
+
+install-zsh:
+	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
+	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
+
 
 install: install-bin install-man
 
@@ -51,3 +60,5 @@ uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(SKELDIR)"
 	$(Q)$(RM) "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@*"
+
+.PHONY: all install uninstall
