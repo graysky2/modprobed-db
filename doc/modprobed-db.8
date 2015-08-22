@@ -62,6 +62,16 @@ Systemd users not wishing to use cron may use the included \fBmodprobed-db\fP@.s
 .fam T
 .fi
 Note that USERNAME should be replaced with your user.
+.PP
+Status of the service and of the timer can be queried like any service and timer:
+.PP
+.nf
+.fam C
+ systemctl status modprobed-db@USERNAME
+ systemctl list-timers
+
+.fam T
+.fi
 .SH SEE ALSO
 \fBmodprobe\fP(8)
 .SH BUGS
