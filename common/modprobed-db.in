@@ -244,8 +244,7 @@ case $1 in
 		check; storesilent; cleanup; exit 0
 		;;
 	*)
-		echo -e "${RED}Modprobed-db v$VERS${NRM}"
-		echo
+		announce
 		echo -e ${BLD}"$0${NRM}${GRN} [option]"${NRM}
 		echo -e " ${BLD} ${NRM}${GRN}list${NRM}${BLD}		Show all modules currently in the database."${NRM}
 		echo -e " ${BLD} ${NRM}${GRN}store${NRM}${BLD}		Store any new loaded module(s) to the databse."${NRM}
