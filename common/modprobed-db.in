@@ -9,7 +9,6 @@
 #
 VERS='@VERSION@'
 SKEL='/usr/share/modprobed-db/modprobed-db.skel'
-XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 if [[ ! -f $SKEL ]]; then
 	echo "$SKEL is missing, please reinstall this package."
@@ -34,6 +33,8 @@ if [[ ! -d "$HOMEDIR" ]]; then
 	echo '==> ERROR: Cannot locate user home directory.'
 	exit 1
 fi
+
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOMEDIR/.config}"
 
 [[ ! -d "$XDG_CONFIG_HOME" ]] && mkdir "$XDG_CONFIG_HOME"
 CFG_FILE="$XDG_CONFIG_HOME/modprobed-db.conf"
@@ -117,6 +118,8 @@ check() {
 			exit 1
 		fi
 	else
+		# insure the db is properly sorted in cases where users manually modify it
+		sort -k 1,1 "$DB" -o "$DB"
 		DBSIZE=$(wc -l <"$DB")
 		LOADSIZE=$(wc -l </tmp/.inmem)
 	fi
