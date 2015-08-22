@@ -40,8 +40,8 @@ install-bin:
 install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MANDIR)"
-	$(INSTALL_DATA) doc/$(PN).8 "$(DESTDIR)$(MANDIR)/$(PN).8"
-	gzip --force -9 "$(DESTDIR)$(MANDIR)/$(PN).8"
+	cat "doc/$(PN).8" | gzip --force -9 > "doc/$(PN).8.gz"
+	$(INSTALL_DATA) "doc/$(PN).8.gz" "$(DESTDIR)$(MANDIR)"
 
 install: install-bin install-man
 
