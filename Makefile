@@ -14,7 +14,7 @@ INSTALL_PROGRAM = $(INSTALL) -m755
 INSTALL_DATA = $(INSTALL) -m644
 INSTALL_DIR = $(INSTALL) -d
 
-RM = rm
+RM = rm -rf
 Q = @
 
 all:
@@ -29,9 +29,9 @@ install-bin:
 	$(INSTALL_DATA) common/$(PN).skel "$(DESTDIR)$(SKELDIR)/$(PN).skel"
 
 	# symlink for compatibility due to name change
-	ln -s $(PN) "$(DESTDIR)$(BINDIR)/modprobed_db"
+	ln --force --symbolic $(PN) "$(DESTDIR)$(BINDIR)/modprobed_db"
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
-	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
+	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) init/modprobed-db@.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.service"
@@ -48,6 +48,6 @@ install: install-bin install-man
 uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
 	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN).8.gz"
-	$(Q)$(RM) -rf "$(DESTDIR)$(SKELDIR)"
-	$(Q)$(RM) "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
+	$(Q)$(RM) "$(DESTDIR)$(SKELDIR)"
+	$(Q)$(RM) "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@*"
