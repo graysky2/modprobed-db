@@ -17,7 +17,6 @@ list_current_modules=("
             grep -Ev \"\$(echo \${IGNORE[@]} | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')\" \
                 >/tmp/.inmem
 ")
-find_new_modules='sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db'
 
 if [[ ! -f $SKEL ]]; then
 	echo "$SKEL is missing, please reinstall this package."
@@ -169,7 +168,7 @@ __save_new_modules() {
 
 	if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
 		WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
-                [[ $1 != 'silent' ]] && echo -e ${YLW}"New module(s) detected:\n${NRM}${BLD}$WHATSNEW"${NRM}
+		[[ $1 != 'silent' ]] && echo -e ${YLW}"New module(s) detected:\n${NRM}${BLD}$WHATSNEW"${NRM}
 		cp -r /tmp/.potential_new_db "$DB"
 		NEWDBSIZE=$(wc -l <"$DB")
 		[[ $1 != 'silent' ]] && echo -e ${BLD}"$NEWDBSIZE modules are now saved in ${YLW}$DB"${NRM} \
@@ -178,14 +177,14 @@ __save_new_modules() {
 		[[ $1 == 'silent' ]] && echo "No new modules detected" || {
     		    [[ $FIRST_TIME_RUN -eq 1 ]] && exit 0 ||
 	    		echo -e ${BLD}"No new modules detected. Taking no action."${NRM}
-        }
+		}
 	fi
 }
 
 __list_find_store_new_modules() {
     DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
     eval "${list_current_modules[@]}"
-    eval "${find_new_modules}"
+    sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
     __save_new_modules $1
 }
 
