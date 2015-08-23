@@ -208,7 +208,6 @@ store() {
     __list_find_store_new_modules 'store'
 }
 
-# merge store and storelist in a new function
 storesilent() {
     [[ -w "$DB" ]] || exit 1
     DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
