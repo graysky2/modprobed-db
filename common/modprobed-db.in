@@ -248,7 +248,13 @@ case $1 in
 		check; storesilent; cleanup; exit 0
 		;;
 	*)
-		echo -e ${BLD}"$0${NRM}${GRN} {list|recall|store|debug}"${NRM}
+		announce
+		echo -e ${BLD}"$0${NRM}${GRN} [option]"${NRM}
+		echo -e " ${BLD} ${NRM}${GRN}list${NRM}${BLD}		Show all modules currently in the database."${NRM}
+		echo -e " ${BLD} ${NRM}${GRN}store${NRM}${BLD}		Store any new loaded module(s) to the databse."${NRM}
+		echo -e " ${BLD} ${NRM}${GRN}debug${NRM}${BLD}		Diff loaded modules from the database (show what did not get loaded)."${NRM}
+		echo -e " ${BLD} ${NRM}${GRN}recall${NRM}${BLD}	Modprobe to load all modules in the database. ${NRM}${BLD}${RED}MUST be called from sudo!"${NRM}
+		echo
 		echo -e ${BLD}"See manpage for additional details"${NRM}
 		exit 0
 esac
