@@ -150,7 +150,7 @@ recall() {
 	echo -e ${BLD}"Attempting to modprobe the contents of ${YLW}$DB"${NRM}${BLD}
 	modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$DB")
 	# print out currently loaded modules less those in the IGNORE array
-    eval "${list_current_modules[@]}"
+	eval "${list_current_modules[@]}"
 
 	echo
 	echo -e ${RED}"$(wc -l </tmp/.inmem)${NRM}${BLD} modules are now loaded per ${YLW}/proc/modules"${NRM}
@@ -169,20 +169,21 @@ __save_new_modules() {
 
 	if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
 		WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
-        [[ $1 != 'silent' ]] && echo -e ${YLW}"New module(s) detected:\n${NRM}${BLD}$WHATSNEW"${NRM}
+                [[ $1 != 'silent' ]] && echo -e ${YLW}"New module(s) detected:\n${NRM}${BLD}$WHATSNEW"${NRM}
 		cp -r /tmp/.potential_new_db "$DB"
 		NEWDBSIZE=$(wc -l <"$DB")
 		[[ $1 != 'silent' ]] && echo -e ${BLD}"$NEWDBSIZE modules are now saved in ${YLW}$DB"${NRM} \
 		    || echo "$NEWDBSIZE modules are now saved in $DB"
 	else
 		[[ $1 == 'silent' ]] && echo "No new modules detected" || {
-    		[[ $FIRST_TIME_RUN -eq 1 ]] && exit 0 ||
+    		    [[ $FIRST_TIME_RUN -eq 1 ]] && exit 0 ||
 	    		echo -e ${BLD}"No new modules detected. Taking no action."${NRM}
         }
 	fi
 }
 
 __list_find_store_new_modules() {
+    DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
     eval "${list_current_modules[@]}"
     eval "${find_new_modules}"
     __save_new_modules $1
@@ -203,14 +204,11 @@ store() {
 		echo -e ${BLD}"     the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location."${NRM}
 		exit 1
 	fi
-
-    DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
-    __list_find_store_new_modules 'store'
+	__list_find_store_new_modules 'store'
 }
 
 storesilent() {
     [[ -w "$DB" ]] || exit 1
-    DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
     __list_find_store_new_modules 'silent'
 }
 
