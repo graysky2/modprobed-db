@@ -37,6 +37,7 @@ ifneq ($(wildcard $(DESTDIR)$(ZSHDIR)/.*),)
 	$(MAKE) install-zsh
 endif
 
+	$(Q)echo -e '\033[1;32mInstalling systemd files...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) init/modprobed-db@.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.service"
 	$(INSTALL_DATA) init/modprobed-db@.timer "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.timer"
@@ -48,6 +49,7 @@ install-man:
 	$(INSTALL_DATA) "$(MANF).gz" "$(DESTDIR)$(MANDIR)"
 
 install-zsh:
+	$(Q)echo -e '\033[1;32mInstalling zsh auto-completion file...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
 	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 
