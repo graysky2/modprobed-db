@@ -131,6 +131,8 @@ check() {
 			exit 1
 		fi
 	else
+	    # insure the db is properly sorted in cases where users manually modify it
+	    sort -k 1,1 "$DB" -o "$DB"
 	    __db_size
 	fi
 }
