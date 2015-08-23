@@ -182,6 +182,12 @@ __save_new_modules() {
 	fi
 }
 
+__list_find_store_new_modules() {
+    eval "${list_current_modules[@]}"
+    eval "${find_new_modules}"
+    __save_new_modules $1
+}
+
 store() {
 	if [[ ! -w "$DB" ]]; then
 		echo -e ${RED}WARNING:${NRM}
@@ -199,20 +205,14 @@ store() {
 	fi
 
     DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
-
-    eval "${list_current_modules[@]}"
-    eval "${find_new_modules}"
-    __save_new_modules 'store'
+    __list_find_store_new_modules 'store'
 }
 
 # merge store and storelist in a new function
 storesilent() {
     [[ -w "$DB" ]] || exit 1
     DBCHECK=$(md5sum "$DB" | gawk '{print $1}')
-
-    eval "${list_current_modules[@]}"
-    eval "${find_new_modules}"
-    __save_new_modules 'silent'
+    __list_find_store_new_modules 'silent'
 }
 
 cleanup() {
