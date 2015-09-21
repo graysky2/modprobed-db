@@ -247,7 +247,8 @@ case $1 in
 		announce
 		echo -e ${BLD}"$0${NRM}${GRN} [option]"${NRM}
 		echo -e " ${BLD} ${NRM}${GRN}list${NRM}${BLD}		Show all modules currently in the database."${NRM}
-		echo -e " ${BLD} ${NRM}${GRN}store${NRM}${BLD}		Store any new loaded module(s) to the databse."${NRM}
+		echo -e " ${BLD} ${NRM}${GRN}store${NRM}${BLD}		Store any new module(s) to the database."${NRM}
+		echo -e " ${BLD} ${NRM}${GRN}storesilent${NRM}${BLD}	Store any new module(s) to the database more quietly."${NRM}
 		echo -e " ${BLD} ${NRM}${GRN}debug${NRM}${BLD}		Diff loaded modules from the database (show what did not get loaded)."${NRM}
 		echo -e " ${BLD} ${NRM}${GRN}recall${NRM}${BLD}	Modprobe to load all modules in the database. ${NRM}${BLD}${RED}MUST be called from sudo!"${NRM}
 		echo
