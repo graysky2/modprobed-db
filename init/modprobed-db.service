@@ -3,14 +3,11 @@ Description=Modprobed-db
 Documentation=man:modprobed-db(8)
 Documentation=https://wiki.archlinux.org/index.php/Modprobed-db
 RequiresMountsFor=/home/
-Wants=local-fs.target modprobed-db@.timer
+Wants=modprobed-db.timer
 
 [Service]
-Type=oneshot
-User=%I
-RemainAfterExit=yes
+Type=simple
 ExecStart=/usr/bin/modprobed-db storesilent
-ExecStop=/usr/bin/modprobed-db storesilent
 
 [Install]
 WantedBy=default.target

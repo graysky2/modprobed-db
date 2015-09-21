@@ -1,11 +1,11 @@
-VERSION = 2.32
+VERSION = 2.33
 PN = modprobed-db
 
 PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PN)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man8
-INITDIR_SYSTEMD = /usr/lib/systemd/system
+INITDIR_SYSTEMD = /usr/lib/systemd/user
 SKELDIR = $(PREFIX)/share/$(PN)
 ZSHDIR = $(PREFIX)/share/zsh/site-functions
 
@@ -34,8 +34,8 @@ install-bin:
 	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
-	$(INSTALL_DATA) init/modprobed-db@.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.service"
-	$(INSTALL_DATA) init/modprobed-db@.timer "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@.timer"
+	$(INSTALL_DATA) init/modprobed-db.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service"
+	$(INSTALL_DATA) init/modprobed-db.timer "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.timer"
 
 install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
