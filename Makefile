@@ -31,7 +31,7 @@ install-bin:
 	# symlink for compatibility due to name change
 	ln -s $(PN) "$(DESTDIR)$(BINDIR)/modprobed_db"
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
-	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
+	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 	
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) init/modprobed-db.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service"
@@ -50,4 +50,4 @@ uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN).8.gz"
 	$(Q)$(RM) -rf "$(DESTDIR)$(SKELDIR)"
 	$(Q)$(RM) "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
-	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db@*"
+	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.*"
