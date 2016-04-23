@@ -1,4 +1,4 @@
-VERSION = 2.33
+VERSION = 2.34
 PN = modprobed-db
 
 PREFIX ?= /usr
@@ -28,8 +28,6 @@ install-bin:
 	$(INSTALL_PROGRAM) common/$(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
 	$(INSTALL_DATA) common/$(PN).skel "$(DESTDIR)$(SKELDIR)/$(PN).skel"
 
-	# symlink for compatibility due to name change
-	ln -s $(PN) "$(DESTDIR)$(BINDIR)/modprobed_db"
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
 	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 	
