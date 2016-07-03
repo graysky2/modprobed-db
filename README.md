@@ -24,8 +24,13 @@ Example running the script once every 20 minutes:
 Systemd users not wishing to use cron may use the included user modprobed-db.service which will run modprobed-db in store
 mode once per hour, and at boot and on shutdown. Invoke it like so:
 
-	# systemctl enable modprobed-db.service
-	# systemctl start modprobed-db.service
+	$ systemctl --user enable modprobed-db.service
+	$ systemctl --user start modprobed-db.service
+
+Status of the service and of the timer can be queried like any service and timer:
+
+	$ systemctl --user status modprobed-db
+	$ systemctl --user list-timers
 
 DATA RECALL
 
