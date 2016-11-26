@@ -11,27 +11,27 @@ VERS='@VERSION@'
 SKEL='/usr/share/modprobed-db/modprobed-db.skel'
 
 if [[ ! -f $SKEL ]]; then
-	echo "$SKEL is missing, please reinstall this package."
-	exit 1
+  echo "$SKEL is missing, please reinstall this package."
+  exit 1
 fi
 
 if [[ -z "$SUDO_USER" ]]; then
-	logname &>/dev/null
-	if [[ $? -eq 0 ]]; then
-		USER=$(logname)
-	fi
+  logname &>/dev/null
+  if [[ $? -eq 0 ]]; then
+    USER=$(logname)
+  fi
 elif [[ "$SUDO_USER" = "root" ]]; then
-	mesg="Cannot determine your username so exiting."
-	echo -e "==> ERROR: ${mesg}" && exit 1
+  mesg="Cannot determine your username so exiting."
+  echo -e "==> ERROR: ${mesg}" && exit 1
 else
-	USER="$SUDO_USER"
+  USER="$SUDO_USER"
 fi
 
 HOMEDIR=$(getent passwd "$USER" | cut -d: -f6)
 
 if [[ ! -d "$HOMEDIR" ]]; then
-	echo '==> ERROR: Cannot locate user home directory.'
-	exit 1
+  echo '==> ERROR: Cannot locate user home directory.'
+  exit 1
 fi
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOMEDIR/.config}"
@@ -44,214 +44,216 @@ CFG_FILE="$XDG_CONFIG_HOME/modprobed-db.conf"
 mv "$HOMEDIR/.config/modprobed_db.conf" "$CFG_FILE"
 
 if [[ ! -f "$CFG_FILE" ]]; then
-	echo '------------------------------------------------------------'
-	echo ' No config file found so creating a fresh one in:'
-	echo " $CFG_FILE"
-	echo
-	echo ' Consult the man page for setup instructions.'
-	if [[ -f /etc/modprobed_db.conf ]]; then
-		echo
-		echo ' Notice:'
-		echo ' /etc/modprobed_db.conf was found on your system.'
-		echo ' This file depreciated starting in version 2.19.'
-		echo ' Please diff this file against the freshly created one.'
-		echo
-		echo ' Do NOT just blindly overwrite!'
-		echo ' Note the differences in names (no underscore any more)!'
-	fi
-	sed  "s|@HOME@|$HOMEDIR|" "$SKEL" >"$CFG_FILE"
-	echo '------------------------------------------------------------'
-	exit 0
+  echo '------------------------------------------------------------'
+  echo ' No config file found so creating a fresh one in:'
+  echo " $CFG_FILE"
+  echo
+  echo ' Consult the man page for setup instructions.'
+  if [[ -f /etc/modprobed_db.conf ]]; then
+    echo
+    echo ' Notice:'
+    echo ' /etc/modprobed_db.conf was found on your system.'
+    echo ' This file depreciated starting in version 2.19.'
+    echo ' Please diff this file against the freshly created one.'
+    echo
+    echo ' Do NOT just blindly overwrite!'
+    echo ' Note the differences in names (no underscore any more)!'
+  fi
+  sed  "s|@HOME@|$HOMEDIR|" "$SKEL" >"$CFG_FILE"
+  echo '------------------------------------------------------------'
+  exit 0
 else
-	. "$CFG_FILE"
-	DB="$DBPATH/modprobed.db"
+  . "$CFG_FILE"
+  DB="$DBPATH/modprobed.db"
 fi
 
 # default colors if undefined are for dark backgrounds
 [[ -z "$COLORS" ]] && COLORS="dark"
 [[ "$COLORS" = "dark" ]] && export BLD="\e[01m" \
-	RED="\e[01;31m" \
-	GRN="\e[01;32m" \
-	YLW="\e[01;33m" \
-	NRM="\e[00m"
+  RED="\e[01;31m" \
+  GRN="\e[01;32m" \
+  YLW="\e[01;33m" \
+  NRM="\e[00m"
 [[ "$COLORS" = "light" ]] && export BLD="\e[01m" \
-	RED="\e[00;31m" \
-	GRN="\e[00;32m" \
-	YLW="\e[00;34m" \
-	NRM="\e[00m"
+  RED="\e[00;31m" \
+  GRN="\e[00;32m" \
+  YLW="\e[00;34m" \
+  NRM="\e[00m"
 
 check() {
-	# print out currently loaded modules less those in the IGNORE array
-	awk '{print $1}' /proc/modules | sort -k 1,1 |
-	grep -Ev "$(echo "${IGNORE[*]}" | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" >/tmp/.inmem
+  # print out currently loaded modules less those in the IGNORE array
+  awk '{print $1}' /proc/modules | sort -k 1,1 |
+  grep -Ev "$(echo "${IGNORE[*]}" | sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" >/tmp/.inmem
 
-	if [[ ! -f "$DB" ]]; then
-		# check to see if user can write to $DBPATH
-		if [[ -w "$DBPATH" ]]; then
-			echo -e "${BLD}New database created: ${YLW}$DB${NRM}"
-			echo
-			FIRST_TIME_RUN=1
-			if [[ -f /var/log/modprobed.db ]]; then
-				echo
-				echo -e "${BLD}${RED}NOTICE:${NRM}"
-				echo -e "${BLD}${YLW}/var/log/modprobed.db${NRM}${BLD} found on this system.${NRM}"
-				echo -e "${BLD}It is recommended that you copy it to ${YLW}$DB${NRM}"
-				echo -e "${BLD}since this is the new default location for the database.${NRM}"
-				echo
-				echo -e "${BLD}Once copied, please delete the old ${YLW}/var/log/modprobed.db${NRM}"
-			fi
-			cp /tmp/.inmem "$DB"
-			DBSIZE=$(wc -l <"$DB")
-			LOADSIZE=$(wc -l </tmp/.inmem)
-		else
-			echo -e "${RED}WARNING:${NRM}"
-			echo -e "${BLD} Cannot create ${YLW}$DB${NRM}${BLD} since $USER does not have write access to ${YLW}$DBPATH${NRM}"
-			echo
-			echo -e "${BLD} Your options:${NRM}"
-			echo -e "${BLD}  1) Run $0 as root then change owners of the database like this:${NRM}"
-			echo -e "${BLD}     # chown $USER:$(id -g -n "$USER") $DB${NRM}"
-			echo
-			echo -e "${BLD}  or${NRM}"
-			echo
-			echo -e "${BLD}  2) Redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} to somewhere $USER can write.${NRM}"
-			exit 1
-		fi
-	else
-		# insure the db is properly sorted in cases where users manually modify it
-		sort -k 1,1 "$DB" -o "$DB"
-		DBSIZE=$(wc -l <"$DB")
-		LOADSIZE=$(wc -l </tmp/.inmem)
-	fi
+  if [[ ! -f "$DB" ]]; then
+    # check to see if user can write to $DBPATH
+    if [[ -w "$DBPATH" ]]; then
+      echo -e "${BLD}New database created: ${YLW}$DB${NRM}"
+      echo
+      FIRST_TIME_RUN=1
+      if [[ -f /var/log/modprobed.db ]]; then
+        echo
+        echo -e "${BLD}${RED}NOTICE:${NRM}"
+        echo -e "${BLD}${YLW}/var/log/modprobed.db${NRM}${BLD} found on this system.${NRM}"
+        echo -e "${BLD}It is recommended that you copy it to ${YLW}$DB${NRM}"
+        echo -e "${BLD}since this is the new default location for the database.${NRM}"
+        echo
+        echo -e "${BLD}Once copied, please delete the old ${YLW}/var/log/modprobed.db${NRM}"
+      fi
+      cp /tmp/.inmem "$DB"
+      DBSIZE=$(wc -l <"$DB")
+      LOADSIZE=$(wc -l </tmp/.inmem)
+    else
+      echo -e "${RED}WARNING:${NRM}"
+      echo -e "${BLD} Cannot create ${YLW}$DB${NRM}${BLD} since $USER does not have write access to ${YLW}$DBPATH${NRM}"
+      echo
+      echo -e "${BLD} Your options:${NRM}"
+      echo -e "${BLD}  1) Run $0 as root then change owners of the database like this:${NRM}"
+      echo -e "${BLD}     # chown $USER:$(id -g -n "$USER") $DB${NRM}"
+      echo
+      echo -e "${BLD}  or${NRM}"
+      echo
+      echo -e "${BLD}  2) Redefine the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} to somewhere $USER can write.${NRM}"
+      exit 1
+    fi
+  else
+    # insure the db is properly sorted in cases where users manually modify it
+    sort -k 1,1 "$DB" -o "$DB"
+    DBSIZE=$(wc -l <"$DB")
+    LOADSIZE=$(wc -l </tmp/.inmem)
+  fi
 }
 
 recall() {
-	# since version 2.17 the redundant file is deprecated so remove it
-	[[ -f "$DBPATH/modprobed.long" ]] && rm -f "$DBPATH/modprobed.long"
+  # since version 2.17 the redundant file is deprecated so remove it
+  [[ -f "$DBPATH/modprobed.long" ]] && rm -f "$DBPATH/modprobed.long"
 
-	if [[ $EUID -ne 0 ]]; then
-		echo -e "${BLD}This function must be called as root!${NRM}"
-		exit 1
-	fi
+  if [[ $EUID -ne 0 ]]; then
+    echo -e "${BLD}This function must be called as root!${NRM}"
+    exit 1
+  fi
 
-	# sed statement converts the db to a single, run-on sentence for modprobe
-	echo -e "${BLD}Attempting to modprobe the contents of ${YLW}$DB${NRM}${BLD}"
-	modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$DB")
-	# print out currently loaded modules less those in the IGNORE array
-	awk '{print $1}' /proc/modules | sort -k 1,1 |
-	grep -Ev "$(echo "${IGNORE[*]}" |
-	sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" >/tmp/.inmem
+  # sed statement converts the db to a single, run-on sentence for modprobe
+  echo -e "${BLD}Attempting to modprobe the contents of ${YLW}$DB${NRM}${BLD}"
+  modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$DB")
+  # print out currently loaded modules less those in the IGNORE array
+  awk '{print $1}' /proc/modules | sort -k 1,1 |
+  grep -Ev "$(echo "${IGNORE[*]}" |
+  sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" >/tmp/.inmem
 
-	echo
-	echo -e "${RED}$(wc -l </tmp/.inmem)${NRM}${BLD} modules are now loaded per ${YLW}/proc/modules${NRM}"
+  echo
+  echo -e "${RED}$(wc -l </tmp/.inmem)${NRM}${BLD} modules are now loaded per ${YLW}/proc/modules${NRM}"
 }
 
 debug() {
-	echo -e "${BLD}The following are in the database but not loaded:${NRM}"
-	grep -Fxvf /tmp/.inmem "$DB"
-	echo
-	echo -e "${BLD}The following are loaded but not in the database:${NRM}"
-	grep -Fxvf "$DB" /tmp/.inmem
+  echo -e "${BLD}The following are in the database but not loaded:${NRM}"
+  grep -Fxvf /tmp/.inmem "$DB"
+  echo
+  echo -e "${BLD}The following are loaded but not in the database:${NRM}"
+  grep -Fxvf "$DB" /tmp/.inmem
 }
 
 store() {
-	if [[ ! -w "$DB" ]]; then
-		echo -e "${RED}WARNING:${NRM}"
-		echo -e "${BLD} Cannot modify ${YLW}$DB${NRM}${BLD} since $USER does not have write access!${NRM}"
-		echo
-		echo -e "${BLD} Your options:${NRM}"
-		echo -e "${BLD}  1) Change owners of the database like this:${NRM}"
-		echo -e "${BLD}     chown $USER:$(id -g -n "$USER") $DB${NRM}"
-		echo
-		echo -e "${BLD}  or${NRM}"
-		echo
-		echo -e "${BLD}  2) Move ${YLW}$DB${NRM}${BLD} to somewhere where $USER can write and redefine${NRM}"
-		echo -e "${BLD}     the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location.${NRM}"
-		exit 1
-	fi
+  if [[ ! -w "$DB" ]]; then
+    echo -e "${RED}WARNING:${NRM}"
+    echo -e "${BLD} Cannot modify ${YLW}$DB${NRM}${BLD} since $USER does not have write access!${NRM}"
+    echo
+    echo -e "${BLD} Your options:${NRM}"
+    echo -e "${BLD}  1) Change owners of the database like this:${NRM}"
+    echo -e "${BLD}     chown $USER:$(id -g -n "$USER") $DB${NRM}"
+    echo
+    echo -e "${BLD}  or${NRM}"
+    echo
+    echo -e "${BLD}  2) Move ${YLW}$DB${NRM}${BLD} to somewhere where $USER can write and redefine${NRM}"
+    echo -e "${BLD}     the DBPATH in ${YLW}$CFG_FILE${NRM}${BLD} reflect this new location.${NRM}"
+    exit 1
+  fi
 
-	DBCHECK=$(md5sum "$DB" | cut -c1-32)
-	awk '{print $1}' /proc/modules | sort -k 1,1 | grep -Ev "$(echo "${IGNORE[*]}" |
-	sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" > /tmp/.inmem
+  DBCHECK=$(md5sum "$DB" | cut -c1-32)
+  awk '{print $1}' /proc/modules | sort -k 1,1 | grep -Ev "$(echo "${IGNORE[*]}" |
+  sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" > /tmp/.inmem
 
-	sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
-	NEWCHECK=$(md5sum /tmp/.potential_new_db | cut -c1-32)
+  sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
+  NEWCHECK=$(md5sum /tmp/.potential_new_db | cut -c1-32)
 
-	if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
-		WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
-		echo -e "${YLW}New module(s) detected:\n${NRM}${BLD}$WHATSNEW${NRM}"
-		cp /tmp/.potential_new_db "$DB"
-		NEWDBSIZE=$(wc -l <"$DB")
-		echo
-		echo -e "${BLD}$NEWDBSIZE modules are now saved in ${YLW}$DB${NRM}"
-	else
-		[[ $FIRST_TIME_RUN -eq 1 ]] && exit 0 ||
-			echo -e "${BLD}No new modules detected. Taking no action.${NRM}"
-	fi
+  if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
+    WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
+    echo -e "${YLW}New module(s) detected:\n${NRM}${BLD}$WHATSNEW${NRM}"
+    cp /tmp/.potential_new_db "$DB"
+    NEWDBSIZE=$(wc -l <"$DB")
+    echo
+    echo -e "${BLD}$NEWDBSIZE modules are now saved in ${YLW}$DB${NRM}"
+  else
+    [[ $FIRST_TIME_RUN -eq 1 ]] && exit 0 ||
+      echo -e "${BLD}No new modules detected. Taking no action.${NRM}"
+  fi
 }
 
 storesilent() {
-	[[ -w "$DB" ]] || exit 1
-	DBCHECK=$(md5sum "$DB" | cut -c1-32)
-	awk '{print $1}' /proc/modules | sort -k 1,1 | grep -Ev "$(echo "${IGNORE[*]}" |
-	sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" > /tmp/.inmem
+  [[ -w "$DB" ]] || exit 1
+  DBCHECK=$(md5sum "$DB" | cut -c1-32)
+  awk '{print $1}' /proc/modules | sort -k 1,1 | grep -Ev "$(echo "${IGNORE[*]}" |
+  sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" > /tmp/.inmem
 
-	sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
-	NEWCHECK=$(md5sum /tmp/.potential_new_db | cut -c1-32)
+  sort -k 1,1 "$DB" /tmp/.inmem | uniq > /tmp/.potential_new_db
+  NEWCHECK=$(md5sum /tmp/.potential_new_db | cut -c1-32)
 
-	if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
-		WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
-		cp /tmp/.potential_new_db "$DB"
-		NEWDBSIZE=$(wc -l <"$DB")
-		echo "$NEWDBSIZE modules are now saved in $DB"
-	else
-		echo "No new modules detected"
-	fi
+  if [[ "$DBCHECK" != "$NEWCHECK" ]]; then
+    WHATSNEW=$(grep -Fxvf "$DB" /tmp/.potential_new_db)
+    cp /tmp/.potential_new_db "$DB"
+    NEWDBSIZE=$(wc -l <"$DB")
+    echo "$NEWDBSIZE modules are now saved in $DB"
+  else
+    echo "No new modules detected"
+  fi
 }
 
 cleanup() {
-	[[ -f /tmp/.inmem ]] && rm -f /tmp/.inmem
-	[[ -f /tmp/.potential_new_db ]] && rm -f /tmp/.potential_new_db
+  [[ -f /tmp/.inmem ]] && rm -f /tmp/.inmem
+  [[ -f /tmp/.potential_new_db ]] && rm -f /tmp/.potential_new_db
 }
 
 announce() {
-	echo -e "${RED}Modprobed-db v$VERS${NRM}"
-	echo
-	check
-	echo -e "${BLD}$LOADSIZE modules currently loaded per ${YLW}/proc/modules${NRM}"
-	echo -e "${BLD}$DBSIZE modules are in ${YLW}$DB${NRM}"
-	echo
+  echo -e "${RED}Modprobed-db v$VERS${NRM}"
+  echo
+  check
+  echo -e "${BLD}$LOADSIZE modules currently loaded per ${YLW}/proc/modules${NRM}"
+  echo -e "${BLD}$DBSIZE modules are in ${YLW}$DB${NRM}"
+  echo
 }
 
 case $1 in
-	tit)
-		check; exit 0
-		;;
-	l|L|List|list)
-		announce; cat "$DB"; cleanup; exit 0
-		;;
-	r|R|Recall|recall)
-		announce; recall; cleanup; exit 0
-		;;
-	d|D|Debug|debug)
-		announce; debug; cleanup; exit 0
-		;;
-	s|S|Store|store)
-		announce; store; cleanup; exit 0
-		;;
-	storesilent)
-		# this function is designed to be called by the systemd timer
-		# simply to reduce the write entries to the journal
-		check; storesilent; cleanup; exit 0
-		;;
-	*)
-		announce
-		echo -e "${BLD}$0${NRM}${GRN} [option]${NRM}"
-		echo -e " ${BLD} ${NRM}${GRN}list${NRM}${BLD}		Show all modules currently in the database.${NRM}"
-		echo -e " ${BLD} ${NRM}${GRN}store${NRM}${BLD}		Store any new module(s) to the database.${NRM}"
-		echo -e " ${BLD} ${NRM}${GRN}storesilent${NRM}${BLD}	Store any new module(s) to the database more quietly.${NRM}"
-		echo -e " ${BLD} ${NRM}${GRN}debug${NRM}${BLD}		Diff loaded modules from the database (show what did not get loaded).${NRM}"
-		echo -e " ${BLD} ${NRM}${GRN}recall${NRM}${BLD}	Modprobe to load all modules in the database. ${NRM}${BLD}${RED}MUST be called from sudo!${NRM}"
-		echo
-		echo -e "${BLD}See manpage for additional details${NRM}"
-		exit 0
+  tit)
+    check; exit 0
+    ;;
+  l|L|List|list)
+    announce; cat "$DB"; cleanup; exit 0
+    ;;
+  r|R|Recall|recall)
+    announce; recall; cleanup; exit 0
+    ;;
+  d|D|Debug|debug)
+    announce; debug; cleanup; exit 0
+    ;;
+  s|S|Store|store)
+    announce; store; cleanup; exit 0
+    ;;
+  storesilent)
+    # this function is designed to be called by the systemd timer
+    # simply to reduce the write entries to the journal
+    check; storesilent; cleanup; exit 0
+    ;;
+  *)
+    announce
+    echo -e "${BLD}$0${NRM}${GRN} [option]${NRM}"
+    echo -e " ${BLD} ${NRM}${GRN}list${NRM}${BLD}		Show all modules currently in the database.${NRM}"
+    echo -e " ${BLD} ${NRM}${GRN}store${NRM}${BLD}		Store any new module(s) to the database.${NRM}"
+    echo -e " ${BLD} ${NRM}${GRN}storesilent${NRM}${BLD}	Store any new module(s) to the database more quietly.${NRM}"
+    echo -e " ${BLD} ${NRM}${GRN}debug${NRM}${BLD}		Diff loaded modules from the database (show what did not get loaded).${NRM}"
+    echo -e " ${BLD} ${NRM}${GRN}recall${NRM}${BLD}	Modprobe to load all modules in the database. ${NRM}${BLD}${RED}MUST be called from sudo!${NRM}"
+    echo
+    echo -e "${BLD}See manpage for additional details${NRM}"
+    exit 0
 esac
+
+# vim:set ts=2 sw=2 et:
