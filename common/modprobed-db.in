@@ -16,8 +16,7 @@ if [[ ! -f $SKEL ]]; then
 fi
 
 if [[ -z "$SUDO_USER" ]]; then
-  logname &>/dev/null
-  if [[ $? -eq 0 ]]; then
+  if logname &>/dev/null; then
     USER=$(logname)
   fi
 elif [[ "$SUDO_USER" = "root" ]]; then
