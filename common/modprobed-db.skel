@@ -1,22 +1,21 @@
 # For documentation, see the manpage for modprobed-db
 
 # Path where database will reside.
-# Do NOT user a variable in the following path like $HOME
-# You MUST use a the fully qualified path or else invoking the script via sudo
+# Do NOT use a variable in the following path like $HOME
+# You MUST use a fully qualified path or else invoking the script via sudo
 # will trick it into thinking that the db is in /root/foo/bar
 DBPATH="@HOME@/.config"
 
 # Define the background of your terminal theme here.
 # A setting of dark will produce colors that nicely contrast a dark background.
-#  setting of light will produce colors that nicely contrast a light background.
+# A setting of light will produce colors that nicely contrast a light background.
 COLORS=dark
 #COLORS=light
 
 
-# Add modules in the ignore array that you do NOT want counted, for example modules that
-# get built or that are provided by another package.
+# Add modules in the ignore array that you do NOT want counted, for example out-of-tree
+# modules and those provided by another package.
 #
-# For Arch Linux, some examples are given below.
-IGNORE=(nvidia vboxdrv vboxnetflt vboxnetadp vboxpci lirc_dev lirc_i2c
-osscore oss_hdaudio oss_usb tp_smapi thinkpad_ec
-zavl znvpair zunicode zcommon zpios zfs spl splat)
+# For Arch Linux, some examples are given below but this is not an fully inclusive list.
+
+IGNORE=(nvidia nvidia_drm nvidia_modeset vboxdrv vboxnetadp vboxnetflt vboxpci wireguard)

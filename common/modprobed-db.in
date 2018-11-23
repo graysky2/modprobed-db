@@ -222,9 +222,6 @@ announce() {
 }
 
 case $1 in
-  tit)
-    check; exit 0
-    ;;
   l|L|List|list)
     announce; cat "$DB"; cleanup; exit 0
     ;;
