@@ -1,6 +1,5 @@
 [Unit]
-Description=Timer for modprobed-db - 1Hour
-PartOf=modprobed-db.service
+Description=Check for new modules
 
 [Timer]
 OnUnitActiveSec=1h
