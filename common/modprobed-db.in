@@ -223,7 +223,7 @@ announce() {
 
 case $1 in
   l|L|List|list)
-    announce; cat "$DB"; cleanup; exit 0
+    cat "$DB"; cleanup; exit 0
     ;;
   r|R|Recall|recall)
     announce; recall; cleanup; exit 0
