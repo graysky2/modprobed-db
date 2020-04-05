@@ -2,4 +2,4 @@
 Description=Check for new modules
 
 [Timer]
-OnUnitActiveSec=1h
+OnUnitActiveSec=6h

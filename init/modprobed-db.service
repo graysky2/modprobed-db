@@ -6,8 +6,9 @@ RequiresMountsFor=/home/
 Wants=modprobed-db.timer
 
 [Service]
-Type=simple
-ExecStart=/usr/bin/modprobed-db storesilent
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/usr/bin/modprobed-db storesilent
 
 [Install]
 WantedBy=default.target
