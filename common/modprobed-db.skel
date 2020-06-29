@@ -18,4 +18,4 @@ COLORS=dark
 #
 # For Arch Linux, some examples are given below but this is not an fully inclusive list.
 
-IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm vboxdrv vboxnetadp vboxnetflt vboxpci wireguard)
+IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm vboxdrv vboxnetadp vboxnetflt vboxpci)

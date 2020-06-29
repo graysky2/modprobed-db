@@ -4,10 +4,11 @@ Documentation=man:modprobed-db(8)
 Documentation=https://wiki.archlinux.org/index.php/Modprobed-db
 RequiresMountsFor=/home/
 Wants=modprobed-db.timer
+Before=reboot.target
 
 [Service]
 Type=oneshot
-RemainAfterExit=true
+RemainAfterExit=yes
 ExecStop=/usr/bin/modprobed-db storesilent
 
 [Install]
