@@ -10,7 +10,7 @@ Running a make install as root will distribute the files to the filesystem.
 
 `# make install`
 
-# USAGE
+# Usage
 Refer to the man page `man modprobed-db`
 
 # Links

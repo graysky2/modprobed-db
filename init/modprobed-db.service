@@ -1,14 +1,13 @@
 [Unit]
-Description=Modprobed-db
+Description=modprobed-db scan and store new modules
 Documentation=man:modprobed-db(8)
 Documentation=https://wiki.archlinux.org/index.php/Modprobed-db
 RequiresMountsFor=/home/
 Wants=modprobed-db.timer
-Before=reboot.target
 
 [Service]
-Type=oneshot
-RemainAfterExit=yes
+Type=simple
+ExecStart=/usr/bin/modprobed-db storesilent
 ExecStop=/usr/bin/modprobed-db storesilent
 
 [Install]
