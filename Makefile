@@ -1,4 +1,4 @@
-VERSION = 2.44
+VERSION = 2.45
 PN = modprobed-db
 
 PREFIX ?= /usr
@@ -47,5 +47,6 @@ uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
 	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN).8.gz"
 	$(Q)$(RM) -rf "$(DESTDIR)$(SKELDIR)"
+	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service"
+	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.timer"
 	$(Q)$(RM) "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
-	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.*"
