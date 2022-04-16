@@ -68,16 +68,18 @@ fi
 
 # default colors if undefined are for dark backgrounds
 [[ -z "$COLORS" ]] && COLORS="dark"
-[[ "$COLORS" = "dark" ]] && export BLD="\e[01m" \
-  RED="\e[01;31m" \
-  GRN="\e[01;32m" \
-  YLW="\e[01;33m" \
-  NRM="\e[00m"
-[[ "$COLORS" = "light" ]] && export BLD="\e[01m" \
-  RED="\e[00;31m" \
-  GRN="\e[00;32m" \
-  YLW="\e[00;34m" \
-  NRM="\e[00m"
+[[ "$COLORS" = "dark" ]] && export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
+[[ "$COLORS" = "light" ]] && export BLD="\e[01m" RED="\e[00;31m" GRN="\e[00;32m" YLW="\e[00;34m" NRM="\e[00m"
+
+sudocheck() {
+  # since version 2.17 the redundant file is deprecated so remove it
+  [[ -f "$DBPATH/modprobed.long" ]] && rm -f "$DBPATH/modprobed.long"
+
+  if [[ $EUID -ne 0 ]]; then
+    echo -e "${BLD}This function must be called as root!${NRM}"
+    exit 1
+  fi
+}
 
 check() {
   # print out currently loaded modules less those in the IGNORE array
@@ -123,15 +125,31 @@ check() {
   fi
 }
 
+rebuild() {
+  # first load what can be loaded from current database
+  # sed statement converts the db to a single, run-on sentence for modprobe
+  echo -e "${BLD}Refreshing the contents of ${YLW}$DB${NRM}${BLD}"
+  modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$DB") &>/dev/null
+
+  # save database
+  cp -a "$DB" "$DB".$(date "+%Y%m%d_%H%M%S")
+  echo -e "${BLD}Old database saved to ${YLW}$DB.$(date "+%Y%m%d_%H%M%S")${NRM}${BLD}"
+
+  # make new based on what successfully loaded
+  awk '{print $1}' /proc/modules | sort -k 1,1 | grep -Ev "$(echo "${IGNORE[*]}" |
+  sed -e 's/^/^(/' -e 's/ /|/g' -e 's/$/)$/')" > /tmp/.inmem
+
+  # clear database without deleting it to retain owner since called as sudo
+  sed -i d "$DB"
+
+  # populate the empty file with new list
+  sort -k 1,1 "$DB" /tmp/.inmem | uniq >> "$DB"
+  NEWDBSIZE=$(wc -l <"$DB")
+  echo
+  echo -e "${BLD}$NEWDBSIZE modules are now saved in ${YLW}$DB${NRM}"
+}
+
 recall() {
-  # since version 2.17 the redundant file is deprecated so remove it
-  [[ -f "$DBPATH/modprobed.long" ]] && rm -f "$DBPATH/modprobed.long"
-
-  if [[ $EUID -ne 0 ]]; then
-    echo -e "${BLD}This function must be called as root!${NRM}"
-    exit 1
-  fi
-
   # sed statement converts the db to a single, run-on sentence for modprobe
   echo -e "${BLD}Attempting to modprobe the contents of ${YLW}$DB${NRM}${BLD}"
   modprobe -a $(sed ':a;N;$!ba;s/\n/ /g' "$DB")
@@ -226,7 +244,7 @@ case $1 in
     cat "$DB"; cleanup; exit 0
     ;;
   r|R|Recall|recall)
-    announce; recall; cleanup; exit 0
+    announce; sudocheck; recall; cleanup; exit 0
     ;;
   d|D|Debug|debug)
     announce; debug; cleanup; exit 0
@@ -239,6 +257,9 @@ case $1 in
     # simply to reduce the write entries to the journal
     check; storesilent; cleanup; exit 0
     ;;
+  rb|RB|Rebuild|rebuild)
+    sudocheck; rebuild; cleanup; exit 0
+    ;;
   *)
     announce
     echo -e "${BLD}$0${NRM}${GRN} [option]${NRM}"
@@ -247,6 +268,7 @@ case $1 in
     echo -e " ${BLD} ${NRM}${GRN}storesilent${NRM}${BLD}	Store any new module(s) to the database more quietly.${NRM}"
     echo -e " ${BLD} ${NRM}${GRN}debug${NRM}${BLD}		Diff loaded modules from the database (show what did not get loaded).${NRM}"
     echo -e " ${BLD} ${NRM}${GRN}recall${NRM}${BLD}	Modprobe to load all modules in the database. ${NRM}${BLD}${RED}MUST be called from sudo!${NRM}"
+    echo -e " ${BLD} ${NRM}${GRN}rebuild${NRM}${BLD}	Modprobe to refresh and rebuild the database. ${NRM}${BLD}${RED}MUST be called from sudo!${NRM}"
     echo
     echo -e "${BLD}See manpage for additional details${NRM}"
     exit 0
