@@ -7,6 +7,7 @@ DOCDIR = $(PREFIX)/share/doc/$(PN)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man8
 INITDIR_SYSTEMD = /usr/lib/systemd/user
 SKELDIR = $(PREFIX)/share/$(PN)
+BASHDIR = $(PREFIX)/share/bash-completion/completions
 ZSHDIR = $(PREFIX)/share/zsh/site-functions
 
 INSTALL = install -p
@@ -28,6 +29,8 @@ install-bin:
 	$(INSTALL_PROGRAM) common/$(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
 	$(INSTALL_DATA) common/$(PN).skel "$(DESTDIR)$(SKELDIR)/$(PN).skel"
 
+	$(INSTALL_DIR) "$(DESTDIR)$(BASHDIR)"
+	$(INSTALL_DATA) common/bash-completion "$(DESTDIR)$(BASHDIR)/modprobed-db"
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
 	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
 
