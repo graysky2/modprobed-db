@@ -1,0 +1,11 @@
+_modprobed_db() {
+    local cur prev words cword
+    _init_completion || return
+
+    case $COMP_CWORD in
+        1)
+            COMPREPLY=( $(compgen -W "list store storesilent debug recall rebuild" -- $cur) );;
+    esac
+}
+
+complete -F _modprobed_db modprobed-db

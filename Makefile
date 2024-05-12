@@ -7,6 +7,7 @@ DOCDIR = $(PREFIX)/share/doc/$(PN)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man8
 INITDIR_SYSTEMD = /usr/lib/systemd/user
 SKELDIR = $(PREFIX)/share/$(PN)
+BASHDIR = $(PREFIX)/share/bash-completion/completions
 ZSHDIR = $(PREFIX)/share/zsh/site-functions
 
 INSTALL = install -p
@@ -28,9 +29,11 @@ install-bin:
 	$(INSTALL_PROGRAM) common/$(PN) "$(DESTDIR)$(BINDIR)/$(PN)"
 	$(INSTALL_DATA) common/$(PN).skel "$(DESTDIR)$(SKELDIR)/$(PN).skel"
 
+	$(INSTALL_DIR) "$(DESTDIR)$(BASHDIR)"
+	$(INSTALL_DATA) common/bash-completion "$(DESTDIR)$(BASHDIR)/modprobed-db"
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
 	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
-	
+
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) init/modprobed-db.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service"
 	$(INSTALL_DATA) init/modprobed-db.timer "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.timer"
@@ -39,7 +42,6 @@ install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MANDIR)"
 	$(INSTALL_DATA) doc/$(PN).8 "$(DESTDIR)$(MANDIR)/$(PN).8"
-	gzip -9 "$(DESTDIR)$(MANDIR)/$(PN).8"
 
 install: install-bin install-man
 
