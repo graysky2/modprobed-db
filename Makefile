@@ -30,7 +30,7 @@ install-bin:
 
 	$(INSTALL_DIR) "$(DESTDIR)$(ZSHDIR)"
 	$(INSTALL_DATA) common/zsh-completion "$(DESTDIR)$(ZSHDIR)/_modprobed-db"
-	
+
 	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_SYSTEMD)"
 	$(INSTALL_DATA) init/modprobed-db.service "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service"
 	$(INSTALL_DATA) init/modprobed-db.timer "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.timer"
@@ -39,7 +39,6 @@ install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MANDIR)"
 	$(INSTALL_DATA) doc/$(PN).8 "$(DESTDIR)$(MANDIR)/$(PN).8"
-	gzip -9 "$(DESTDIR)$(MANDIR)/$(PN).8"
 
 install: install-bin install-man
 
