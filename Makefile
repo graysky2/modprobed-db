@@ -46,9 +46,7 @@ install-man:
 install: install-bin install-man
 
 uninstall:
-	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN)"
-	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN).8.gz"
+	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN)" "$(DESTDIR)$(MANDIR)/$(PN).8"
 	$(Q)$(RM) -rf "$(DESTDIR)$(SKELDIR)"
-	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service"
-	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.timer"
-	$(Q)$(RM) "$(DESTDIR)/$(ZSHDIR)/_modprobed-db"
+	$(Q)$(RM) "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.service" "$(DESTDIR)$(INITDIR_SYSTEMD)/modprobed-db.timer"
+	$(Q)$(RM) "$(DESTDIR)/$(ZSHDIR)/_modprobed-db" "$(DESTDIR)$(BASHDIR)/modprobed-db"
