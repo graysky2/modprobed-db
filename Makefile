@@ -45,6 +45,28 @@ install-man:
 
 install: install-bin install-man
 
+install-openrc:
+	$(Q)echo -e '\033[1;32mInstalling OpenRC service files...\033[0m'
+	$(INSTALL_DIR) "$(DESTDIR)$(INITDIR_OPENRC)"
+	$(INSTALL_DIR) "$(DESTDIR)$(CONFDIR_OPENRC)"
+
+	$(INSTALL_PROGRAM) init/modprobed-db.in \
+		"$(DESTDIR)$(INITDIR_OPENRC)/modprobed-db"
+
+	$(INSTALL_PROGRAM) init/modprobed-db_timer.in \
+		"$(DESTDIR)$(INITDIR_OPENRC)/modprobed-db-timer"
+
+	# optional config (only install if present)
+	[ -f init/modprobed-db.confd ] && \
+		$(INSTALL_DATA) init/modprobed-db.confd \
+		"$(DESTDIR)$(CONFDIR_OPENRC)/modprobed-db-timer" || true
+WITH_OPENRC ?= 1
+
+install: install-bin install-man
+ifeq ($(WITH_OPENRC),1)
+	$(MAKE) install-openrc
+endif
+
 uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN)" "$(DESTDIR)$(MANDIR)/$(PN).8"
 	$(Q)$(RM) -rf "$(DESTDIR)$(SKELDIR)"

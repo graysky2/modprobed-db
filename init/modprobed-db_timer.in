@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+
+name="modprobed-db timer"
+command="/bin/sh"
+command_args="-c 'while true; do /usr/bin/modprobed-db storesilent; sleep 6h; done'"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need localmount
+}
+
+# crontab equivalent however this openrc unit dose same as systemd timer ⏲️ but is portable
+# 0 */6 * * * /usr/bin/modprobed-db

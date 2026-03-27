@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+
+description="modprobed-db scan and store new modules"
+
+command="/usr/bin/modprobed-db"
+command_args="storesilent"
+
+# one-shot task (like systemd Type=simple but not persistent)
+command_background=false
+
+depend() {
+    need localmount
+    # ensure /home is mounted if separate
+    need localmount
+}
