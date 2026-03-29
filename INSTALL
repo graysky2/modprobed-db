@@ -6,7 +6,9 @@ BUILDING
   $ make
 
  Running a `make install` as root will distribute the files to
- the filesystem.
+ the filesystem. The default is to provide a systemd user service.
+ Compiling with WITH_OPENRC=1 will provide openrc support and not
+ systemd support. You can of course just use old school cron too.
 
   # make install
 

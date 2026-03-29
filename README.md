@@ -7,6 +7,8 @@ Modprobed-db simply logs every module ever probed on the target system to a text
 `$ make`
 
 Running a make install as root will distribute the files to the filesystem.
+The default is to provide a systemd user service. Compiling with `WITH_OPENRC=1`
+will provide openrc support and not systemd support. You can of course just use old school cron too.
 
 `# make install`
 
