@@ -52,7 +52,7 @@ if [[ ! -f "$CFG_FILE" ]]; then
     echo
     echo ' Notice:'
     echo ' /etc/modprobed_db.conf was found on your system.'
-    echo ' This file has been deprecated starting in version 2.19.'
+    echo ' This file has been deprecated since version 2.19.'
     echo ' Please diff this file against the freshly created one.'
     echo
     echo ' Do NOT just blindly overwrite!'
