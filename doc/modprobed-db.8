@@ -42,7 +42,7 @@ Call modprobe for every module contained in the database.
 .TP
 .B
 rebuild
-Rebuild the database to remove stale modules entries. The current database is loaded via modprobe (warnings are suppressed if any are present) and then a new database is generated based on what loaded successfully. The old database is backed-up.
+Rebuild the database to remove stale module entries. The current database is loaded via modprobe (warnings are suppressed if any are present) and then a new database is generated based on what loaded successfully. The old database is backed-up.
 .SH SETUP AND BASIC USAGE
 .IP 1. 4
 Edit $XDG_CONFIG_HOME/modprobed-db.conf to define modules to ignore in the IGNORE array. For example, modules that are not provided by the Linux kernel package and are provided by an external package. The examples provided are a few suggestions specific to Arch Linux.
@@ -67,7 +67,7 @@ Status of the service and of the timer can be queried like so:
 
 .fam T
 .fi
-Cron users can add an entry their respective crontab:
+Cron users can add an entry to their respective crontab:
 .PP
 .nf
 .fam C
