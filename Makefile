@@ -1,4 +1,4 @@
-VERSION = 2.50
+VERSION = 2.51
 PN = modprobed-db
 
 PREFIX ?= /usr
